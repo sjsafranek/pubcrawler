@@ -10,8 +10,7 @@
             #map { min-height: 55vh; }
 
             /* Map Markers */
-            .custom-numbered-circle {
-                background-color: #2b82cb;
+            .marker-pub {
                 color: #ffffff;
                 border: 2px solid #ffffff;
                 border-radius: 50%;
@@ -25,6 +24,14 @@
                 font-family: sans-serif;
                 font-weight: bold;
                 font-size: 14px;
+            }
+
+            .marker-pub-pending {
+                background-color: #2b82cb;
+            }
+
+            .marker-pub-completed {
+                background-color: #838383;
             }
 
             /* Map Path */
@@ -74,14 +81,23 @@
     <script>
 
         // Helper function to generate a numbered circle icon
-        function createNumberedCircleIcon(number) {
+        function createPubPendingIcon(number) {
             return L.divIcon({
-                className: 'custom-numbered-circle',
+                className: 'marker-pub marker-pub-pending',
                 html: `<span>${number}</span>`,
                 iconSize: [30, 30],   // Width and height of the circle
                 iconAnchor: [15, 15]  // Center point of the icon (half of iconSize)
             });
         }
+
+        function createPubCompletedIcon(number) {
+            return L.divIcon({
+                className: 'marker-pub marker-pub-completed',
+                html: `<span>${number}</span>`,
+                iconSize: [30, 30],   // Width and height of the circle
+                iconAnchor: [15, 15]  // Center point of the icon (half of iconSize)
+            });
+        }        
 
         // Initialize application
         $(function () {
@@ -149,7 +165,8 @@
                 $list.empty();
 
                 $.each(pubs, (i, pub) => {
-                    const marker = L.marker([pub.latitude, pub.longitude], { icon: createNumberedCircleIcon(i+1) });
+                    let icon = !pub.completed ? createPubPendingIcon(i+1) : createPubCompletedIcon(i+1)
+                    const marker = L.marker([pub.latitude, pub.longitude], { icon: icon });
                     marker.bindPopup(popupContent(pub));
                     marker.addTo(layer);
 
@@ -170,32 +187,23 @@
             if (pubs.length) map.fitBounds(L.latLngBounds($.map(pubs, pub => [[pub.latitude, pub.longitude]])).pad(0.1));
             if (allPubs.length) setStatus(`${pubs.length} of ${allPubs.length} pubs ${label}`);
 
-            // Draw walking path
-            // const pathLayer = new L.GeoJSON().addTo(map);
-            // pathLayer.setStyle({
-            //     color: '#ff5722',
-            //     weight: 4,
-            //     opacity: 0.9,
-            //     className: 'marching-ants-line' 
-            // });
-            let coordinates = allPubs.map(d => `${d.longitude},${d.latitude}`).join(';');
-            $.getJSON(`http://router.project-osrm.org/route/v1/foot/${coordinates}?overview=simplified&geometries=geojson`)
-                .done(data => {
-                    console.log(data);
-                    // pathLayer.addData(data.routes[0].geometry);
-
-                    pathLayer && pathLayer.remove();
-                    pathLayer = new L.GeoJSON(data.routes[0].geometry, {
-                        style: {
-                            color: '#ff5722',
-                            weight: 4,
-                            opacity: 0.9,
-                            className: 'marching-ants-line' 
-                        }
-                    });
-                    pathLayer.addTo(map);
-
-                });
+            // // Draw walking path
+            // let coordinates = allPubs.map(d => `${d.longitude},${d.latitude}`).join(';');
+            // let radiuses = allPubs.map(d => `25`).join(';');
+            // $.getJSON(`http://router.project-osrm.org/route/v1/foot/${coordinates}?overview=simplified&geometries=geojson`)
+            //     .done(data => {
+            //         console.log(data);
+            //         pathLayer && pathLayer.remove();
+            //         pathLayer = new L.GeoJSON(data.routes[0].geometry, {
+            //             style: {
+            //                 color: '#ff5722',
+            //                 weight: 4,
+            //                 opacity: 0.9,
+            //                 className: 'marching-ants-line' 
+            //             }
+            //         });
+            //         pathLayer.addTo(map);
+            //     });
         }
 
         render();

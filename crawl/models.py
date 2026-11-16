@@ -76,6 +76,7 @@ class CrawlPub(models.Model):
     crawl = models.ForeignKey(Crawl, on_delete=models.CASCADE)
     pub = models.ForeignKey(Pub, on_delete=models.CASCADE)
     position = models.PositiveIntegerField(default=0)
+    completed = models.BooleanField(default=False)
 
     class Meta:
         ordering = ["position"]
