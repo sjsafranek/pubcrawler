@@ -25,8 +25,8 @@ AMENITY_TAGS = {
         "bar",
         "biergarten",
         "brewery",
-        "pub"
-        # "restaurant"
+        "pub",
+        "restaurant"
     ]
 }
 
