@@ -5,11 +5,13 @@ from .models import City
 from .models import Pub
 from .search import fetch_bars
 
+logger = logging.getLogger(__name__)
+
 
 def create_pub_if_not_exists(city, data):
     pub = Pub.objects.filter(external_id=data['id']).first()
     if not pub:
-        logging.debug(f"Importing pub '{data['name']}'")
+        logger.debug(f"Importing pub '{data['name']}'")
         pub = Pub.objects.create(
             name = data['name'],
             external_id = data['id'],
@@ -34,7 +36,7 @@ def create_pub_if_not_exists(city, data):
 def process_new_city(city_id):
     city = City.objects.filter(pk=city_id).first()
     if city:
-        logging.debug(f'Fetching pubs for {city}')
+        logger.debug(f'Fetching pubs for {city}')
         for bar in fetch_bars(city.name)['bars']:
             pub = create_pub_if_not_exists(city, bar)
 
