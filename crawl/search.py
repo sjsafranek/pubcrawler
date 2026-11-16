@@ -86,3 +86,41 @@ def fetch_bars(city: str) -> dict:
     result = {"city": city.strip(), "count": len(bars), "bars": bars}
     _city_cache[key] = result
     return result
+
+
+def haversine_m(lat1, lon1, lat2, lon2) -> float:
+    """Great-circle distance in meters between two lat/lon points."""
+    lat1, lon1, lat2, lon2 = map(radians, (lat1, lon1, lat2, lon2))
+    a = sin((lat2 - lat1) / 2) ** 2 + cos(lat1) * cos(lat2) * sin((lon2 - lon1) / 2) ** 2
+    return 2 * 6_371_000 * asin(sqrt(a))
+
+
+def fetch_bars_nearby(lat: float, lon: float, radius: float) -> dict:
+    key = (round(lat, 5), round(lon, 5), round(radius))
+    print(key)
+    if key in _nearby_cache:
+        return _nearby_cache[key]
+
+    try:
+        # OSMnx queries a square bounding box around the point...
+        gdf = ox.features.features_from_point((lat, lon), tags=AMENITY_TAGS, dist=radius)
+        bars = gdf_to_bars(gdf)
+    except Exception as exc:
+        if "no matching features" not in str(exc).lower():
+            raise
+        bars = []  # nothing mapped in this area is a valid, empty answer
+
+    # ...so trim to a true circle and sort nearest-first.
+    for bar in bars:
+        bar["distance_m"] = round(haversine_m(lat, lon, bar["lat"], bar["lon"]))
+    bars = sorted((b for b in bars if b["distance_m"] <= radius), key=lambda b: b["distance_m"])
+
+    result = {
+        "center": {"lat": lat, "lon": lon},
+        "radius_m": radius,
+        "count": len(bars),
+        "bars": bars,
+    }
+    _nearby_cache[key] = result
+    return result
+
