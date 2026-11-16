@@ -25,7 +25,9 @@ SECRET_KEY = 'django-insecure-f%-^6iuh!^jp1vs4#nees3pnn-m^z=@mri8y0vsg4adc%i7xxt
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'pubcrawler.thestefanproblem.rocks'
+]
 
 
 TASKS = {"default": {"BACKEND": "django.tasks.backends.immediate.ImmediateBackend"}}
