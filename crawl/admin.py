@@ -19,10 +19,10 @@ class PubAdmin(admin.ModelAdmin):
     list_display = [
         "name", 
         "city",
-        "subtype"
-        "address_street_number"
-        "address_street_name"
-        "address_city"
+        "subtype",
+        "address_street_number",
+        "address_street_name",
+        "address_city",
         "address_postcode"
     ]
     search_fields = ["name"]
