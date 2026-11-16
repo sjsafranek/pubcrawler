@@ -9,7 +9,7 @@
             /* Only what Bootstrap utilities can't express */
             #map { min-height: 55vh; }
 
-
+            /* Map Markers */
             .custom-numbered-circle {
                 background-color: #2b82cb;
                 color: #ffffff;
@@ -25,6 +25,20 @@
                 font-family: sans-serif;
                 font-weight: bold;
                 font-size: 14px;
+            }
+
+            /* Map Path */
+            .marching-ants-line {
+                /* Defines the dash length and gap length */
+                stroke-dasharray: 10, 10; 
+                animation: dashFlow 1s linear infinite;
+            }
+
+            @keyframes dashFlow {
+                to {
+                    /* Must equal the negative sum of your dasharray values (10 + 10 = 20) */
+                    stroke-dashoffset: -20; 
+                }
             }
 
         </style>
@@ -71,6 +85,11 @@
 
         // Initialize application
         $(function () {
+
+            // Parse the JSON data safely in JavaScript
+            const allPubs = JSON.parse(document.getElementById('pubs-json').textContent);
+            console.log(allPubs);
+
             // Full-height two-pane layout on large screens only
             if (window.matchMedia("(min-width: 992px)").matches) $(".row").first().addClass("vh-100");
 
@@ -82,12 +101,13 @@
             }).addTo(map);
             
             const layer = L.layerGroup().addTo(map);
+            let pathLayer;
 
             const $status = $("#status"), 
                   $list = $("#list"), 
                   $type = $("#type"), 
                   $name = $("#name");
-            let allBars = [], label = "";
+            let label = "";
 
             function formatDistance(m) {
                 return m < 1000 ? m + " m" : (m / 1000).toFixed(1) + " km";
@@ -122,47 +142,61 @@
 
             function render() {
                 const type = $type.val(), q = $.trim($name.val()).toLowerCase();
-                const bars = $.grep(allBars, b =>
-                    (!type || b.subtype === type) && (!q || b.name.toLowerCase().includes(q)));
+                const pubs = $.grep(allPubs, pub =>
+                    (!type || pub.subtype === type) && (!q || pub.name.toLowerCase().includes(q)));
 
                 layer.clearLayers();
                 $list.empty();
 
-                $.each(bars, (i, b) => {
-                    // const marker = L.circleMarker([b.latitude, b.longitude], {
-                    //     radius: 7, 
-                    //     weight: 2, 
-                    //     color: "#0a58ca", 
-                    //     fillColor: "#6ea8fe", 
-                    //     fillOpacity: 0.9
-                    // });
-                    const marker = L.marker([b.latitude, b.longitude], { icon: createNumberedCircleIcon(i+1) });
-                    marker.bindPopup(popupContent(b));
+                $.each(pubs, (i, pub) => {
+                    const marker = L.marker([pub.latitude, pub.longitude], { icon: createNumberedCircleIcon(i+1) });
+                    marker.bindPopup(popupContent(pub));
                     marker.addTo(layer);
 
                     $("<button>", { type: "button", class: "list-group-item list-group-item-action" })
-                        .append($("<div>", { class: "fw-semibold" }).text(b.name))
+                        .append($("<div>", { class: "fw-semibold" }).text(pub.name))
                         .append($("<div>", { class: "small text-body-secondary" })
-                        .text([b.subtype, b.distance_m != null ? formatDistance(b.distance_m) : null, b.address]
+                        .text([pub.subtype, pub.distance_m != null ? formatDistance(pub.distance_m) : null, pub.address]
                         .filter(Boolean).join(" · ")))
                         .on("click", function () {
                             $list.children(".active").removeClass("active");
                             $(this).addClass("active");
-                            map.setView([b.latitude, b.longitude], Math.max(map.getZoom(), 16));
+                            map.setView([pub.latitude, pub.longitude], Math.max(map.getZoom(), 16));
                             marker.openPopup();
                         })
                         .appendTo($list);
             });
 
-            if (bars.length) map.fitBounds(L.latLngBounds($.map(bars, b => [[b.latitude, b.longitude]])).pad(0.1));
-            if (allBars.length) setStatus(`${bars.length} of ${allBars.length} pubs ${label}`);
+            if (pubs.length) map.fitBounds(L.latLngBounds($.map(pubs, pub => [[pub.latitude, pub.longitude]])).pad(0.1));
+            if (allPubs.length) setStatus(`${pubs.length} of ${allPubs.length} pubs ${label}`);
+
+            // Draw walking path
+            // const pathLayer = new L.GeoJSON().addTo(map);
+            // pathLayer.setStyle({
+            //     color: '#ff5722',
+            //     weight: 4,
+            //     opacity: 0.9,
+            //     className: 'marching-ants-line' 
+            // });
+            let coordinates = allPubs.map(d => `${d.longitude},${d.latitude}`).join(';');
+            $.getJSON(`http://router.project-osrm.org/route/v1/foot/${coordinates}?overview=simplified&geometries=geojson`)
+                .done(data => {
+                    console.log(data);
+                    // pathLayer.addData(data.routes[0].geometry);
+
+                    pathLayer && pathLayer.remove();
+                    pathLayer = new L.GeoJSON(data.routes[0].geometry, {
+                        style: {
+                            color: '#ff5722',
+                            weight: 4,
+                            opacity: 0.9,
+                            className: 'marching-ants-line' 
+                        }
+                    });
+                    pathLayer.addTo(map);
+
+                });
         }
-
-
-        // Parse the JSON data safely in JavaScript
-        const pubs = JSON.parse(document.getElementById('pubs-json').textContent);
-        console.log(pubs);
-        allBars = pubs;
 
         render();
     });
