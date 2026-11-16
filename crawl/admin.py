@@ -17,8 +17,7 @@ class PubAdmin(admin.ModelAdmin):
     form = PubForm
     change_form_template = "admin/geo_change_form.html"
     list_display = [
-        "name", 
-        "city",
+        "name",
         "subtype",
         "address_street_number",
         "address_street_name",
