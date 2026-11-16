@@ -1,0 +1,57 @@
+{% extends "admin/change_form.html" %}
+
+{% block extrahead %}
+    {{ block.super }}
+    <!-- Load Leaflet from CDN -->
+    <link rel="preconnect" href="https://unpkg.com" crossorigin>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+    <script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+    <style>
+        
+        #admin-map { 
+            height: 400px; 
+            width: 100%; 
+            margin-bottom: 20px; 
+            border: 1px solid #ccc; 
+        }
+
+    </style>      
+{% endblock %}
+
+{% block after_field_sets %}
+    {{ block.super }}
+    <div id="admin-map"></div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const latInput = document.getElementById("id_latitude");
+            const lngInput = document.getElementById("id_longitude");
+
+            const initialLat = parseFloat(latInput.value) || 0.0;
+            const initialLng = parseFloat(lngInput.value) || 0.0;
+
+            const map = L.map('admin-map').setView([initialLat, initialLng], 13);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors',
+                referrerPolicy: 'no-referrer-when-downgrade' // or 'origin', 'strict-origin-when-cross-origin'
+            }).addTo(map);
+
+            const marker = L.marker([initialLat, initialLng], { draggable: true }).addTo(map);
+
+            function updateInputs(lat, lng) {
+                latInput.value = lat.toFixed(6);
+                lngInput.value = lng.toFixed(6);
+            }
+
+            marker.on('dragend', function(e) {
+                const pos = marker.getLatLng();
+                updateInputs(pos.lat, pos.lng);
+            });
+
+            map.on('click', function(e) {
+                marker.setLatLng(e.latlng);
+                updateInputs(e.latlng.lat, e.latlng.lng);
+            });
+        });
+    </script>
+{% endblock %}

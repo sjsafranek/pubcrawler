@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}PubCrawler{% endblock %}</title>
+</head>
+<body>
+<!--     <header>
+        <h1>Welcome to My Website</h1>
+    </header> -->
+
+    <main>
+        {% block content %}
+        <!-- Child templates will inject content here -->
+        {% endblock %}
+    </main>
+
+    <footer>
+        <p>&copy; 2026 PubCrawler</p>
+    </footer>
+</body>
+</html>

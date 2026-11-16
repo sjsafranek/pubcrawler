@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}Crawl :: {{ crawl.name }}{% endblock %}
+
+{% block content %}
+    <h2>{{crawl.name}}</h2>
+
+    {% if pubs %}
+        <ol>
+        {% for pub in pubs %}
+            <li>
+                <h3>{{ pub.name }}</h3>
+            </li>
+        {% endfor %}
+        </ol>
+    {% else %}
+        <p>No pubs are available right now.</p>
+    {% endif %}
+{% endblock %}
