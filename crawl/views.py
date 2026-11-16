@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.shortcuts import get_object_or_404
+from django.forms.models import model_to_dict
 from django.views import View
 from django.http import HttpResponse
 from django.http import JsonResponse
@@ -16,7 +17,7 @@ def crawl_detail(request, slug):
     crawl = get_object_or_404(Crawl, slug=slug)
     return render(request, "crawl/details.html", {
         "crawl": crawl,
-        "pubs": [stop.pub for stop in CrawlPub.objects.filter(crawl=crawl).order_by('position')] 
+        "pubs": [model_to_dict(stop.pub) for stop in CrawlPub.objects.filter(crawl=crawl).order_by('position')] 
     })
     # return JsonResponse({
     #     'data': {

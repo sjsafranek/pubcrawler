@@ -1,19 +1,170 @@
 {% extends "base.html" %}
 
-{% block title %}Crawl :: {{ crawl.name }}{% endblock %}
+    {% block title %}Crawl :: {{ crawl.name }}{% endblock %}
+
+    {% block head %}
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+        <style>
+            /* Only what Bootstrap utilities can't express */
+            #map { min-height: 55vh; }
+
+
+            .custom-numbered-circle {
+                background-color: #2b82cb;
+                color: #ffffff;
+                border: 2px solid #ffffff;
+                border-radius: 50%;
+                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+  
+                /* Center the number inside the circle */
+                display: flex;
+                align-items: center;
+                justify-content: center;
+  
+                font-family: sans-serif;
+                font-weight: bold;
+                font-size: 14px;
+            }
+
+        </style>
+    {% endblock %}
 
 {% block content %}
-    <h2>{{crawl.name}}</h2>
+    <div class="container-fluid p-0">
+        <div class="row g-0">
 
-    {% if pubs %}
-        <ol>
-        {% for pub in pubs %}
-            <li>
-                <h3>{{ pub.name }}</h3>
-            </li>
-        {% endfor %}
-        </ol>
-    {% else %}
-        <p>No pubs are available right now.</p>
-    {% endif %}
+            <!-- Sidebar -->
+            <aside class="col-lg-4 col-xl-3 order-2 order-lg-1 d-flex flex-column border-end bg-body" style="max-height: 100vh;">
+                <header class="p-3 border-bottom">
+                    <h1 class="h3 mb-3">{{crawl.name}}</h1>
+                </header>
+                <div id="status" class="px-3 py-2 small text-body-secondary border-bottom" role="status">
+                    Loading...
+                </div>
+                <div id="list" class="list-group list-group-flush overflow-auto flex-grow-1"></div>
+            </aside>
+
+            <!-- Map -->
+            <main class="col-lg-8 col-xl-9 order-1 order-lg-2">
+                <div id="map" class="h-100 w-100"></div>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    {{ pubs|json_script:"pubs-json" }}
+    <script>
+
+        // Helper function to generate a numbered circle icon
+        function createNumberedCircleIcon(number) {
+            return L.divIcon({
+                className: 'custom-numbered-circle',
+                html: `<span>${number}</span>`,
+                iconSize: [30, 30],   // Width and height of the circle
+                iconAnchor: [15, 15]  // Center point of the icon (half of iconSize)
+            });
+        }
+
+        // Initialize application
+        $(function () {
+            // Full-height two-pane layout on large screens only
+            if (window.matchMedia("(min-width: 992px)").matches) $(".row").first().addClass("vh-100");
+
+            const map = L.map("map").setView([20, 0], 2);
+            L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+                maxZoom: 19, 
+                attribution: "&copy; OpenStreetMap contributors",
+                referrerPolicy: 'no-referrer-when-downgrade'
+            }).addTo(map);
+            
+            const layer = L.layerGroup().addTo(map);
+
+            const $status = $("#status"), 
+                  $list = $("#list"), 
+                  $type = $("#type"), 
+                  $name = $("#name");
+            let allBars = [], label = "";
+
+            function formatDistance(m) {
+                return m < 1000 ? m + " m" : (m / 1000).toFixed(1) + " km";
+            }
+
+            function setStatus(text, isError = false) {
+                $status.text(text)
+                    .toggleClass("text-danger", isError)
+                    .toggleClass("text-body-secondary", !isError);
+            }
+
+            // Built with jQuery's .text() so venue data is never interpreted as HTML
+            function popupContent(pub) {
+                const $p = $("<div>").append(
+                    $("<strong>").text(pub.name),
+                    $("<br>"),
+                    document.createTextNode(pub.subtype)
+                );
+                
+                const addLine = text => $p.append($("<br>"), document.createTextNode(text));
+                if (pub.address_street_number && pub.address_street_name) addLine(`${pub.address_street_number} ${pub.address_street_name}`);
+                if (pub.hours) addLine("Hours: " + pub.hours);
+                if (pub.phone) addLine(pub.phone);
+                if (pub.website && /^https?:\/\//.test(pub.website)) {
+                    $p.append(
+                        $("<br>"),
+                        $("<a>", { href: pub.website, target: "_blank", rel: "noopener" }).text("Website")
+                    );
+                }
+                return $p[0];
+            }
+
+            function render() {
+                const type = $type.val(), q = $.trim($name.val()).toLowerCase();
+                const bars = $.grep(allBars, b =>
+                    (!type || b.subtype === type) && (!q || b.name.toLowerCase().includes(q)));
+
+                layer.clearLayers();
+                $list.empty();
+
+                $.each(bars, (i, b) => {
+                    // const marker = L.circleMarker([b.latitude, b.longitude], {
+                    //     radius: 7, 
+                    //     weight: 2, 
+                    //     color: "#0a58ca", 
+                    //     fillColor: "#6ea8fe", 
+                    //     fillOpacity: 0.9
+                    // });
+                    const marker = L.marker([b.latitude, b.longitude], { icon: createNumberedCircleIcon(i+1) });
+                    marker.bindPopup(popupContent(b));
+                    marker.addTo(layer);
+
+                    $("<button>", { type: "button", class: "list-group-item list-group-item-action" })
+                        .append($("<div>", { class: "fw-semibold" }).text(b.name))
+                        .append($("<div>", { class: "small text-body-secondary" })
+                        .text([b.subtype, b.distance_m != null ? formatDistance(b.distance_m) : null, b.address]
+                        .filter(Boolean).join(" · ")))
+                        .on("click", function () {
+                            $list.children(".active").removeClass("active");
+                            $(this).addClass("active");
+                            map.setView([b.latitude, b.longitude], Math.max(map.getZoom(), 16));
+                            marker.openPopup();
+                        })
+                        .appendTo($list);
+            });
+
+            if (bars.length) map.fitBounds(L.latLngBounds($.map(bars, b => [[b.latitude, b.longitude]])).pad(0.1));
+            if (allBars.length) setStatus(`${bars.length} of ${allBars.length} pubs ${label}`);
+        }
+
+
+        // Parse the JSON data safely in JavaScript
+        const pubs = JSON.parse(document.getElementById('pubs-json').textContent);
+        console.log(pubs);
+        allBars = pubs;
+
+        render();
+    });
+  </script>
 {% endblock %}

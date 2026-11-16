@@ -32,6 +32,7 @@
 
             const map = L.map('admin-map').setView([initialLat, initialLng], 13);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19, 
                 attribution: '&copy; OpenStreetMap contributors',
                 referrerPolicy: 'no-referrer-when-downgrade' // or 'origin', 'strict-origin-when-cross-origin'
             }).addTo(map);

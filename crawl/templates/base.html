@@ -1,8 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
     <title>{% block title %}PubCrawler{% endblock %}</title>
+
+    <script>
+        // Follow the OS light/dark setting using Bootstrap's color modes
+        const dark = matchMedia("(prefers-color-scheme: dark)");
+        const applyTheme = () => document.documentElement.setAttribute("data-bs-theme", dark.matches ? "dark" : "light");
+        applyTheme(); dark.addEventListener("change", applyTheme);
+    </script>
+
+    {% block head %}
+    <!-- Child templates will inject content here -->
+    {% endblock %}
+
 </head>
 <body>
 <!--     <header>
