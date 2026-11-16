@@ -16,3 +16,13 @@ admin.site.register(CrawlPub)
 class PubAdmin(admin.ModelAdmin):
     form = PubForm
     change_form_template = "admin/geo_change_form.html"
+    list_display = [
+        "name", 
+        "city",
+        "subtype"
+        "address_street_number"
+        "address_street_name"
+        "address_city"
+        "address_postcode"
+    ]
+    search_fields = ["name"]
