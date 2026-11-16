@@ -11,6 +11,7 @@ ox.settings.log_console = True
 # OSMnx caches raw Overpass/Nominatim responses on disk by default.
 ox.settings.use_cache = True
 ox.settings.cache_folder = "cache"
+ox.settings.overpass_rate_limit = False     # DANGER
 # ox.settings.cache_folder = Path("/absolute/path/to/your/cache").resolve()
 
 # In-memory caches so repeat searches are instant.

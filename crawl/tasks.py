@@ -1,3 +1,4 @@
+import logging
 from django.tasks import task
 
 from .models import City
@@ -8,7 +9,7 @@ from .search import fetch_bars
 def create_pub_if_not_exists(city, data):
     pub = Pub.objects.filter(external_id=data['id']).first()
     if not pub:
-        print(f"Importing pub '{data['name']}'")
+        logging.debug(f"Importing pub '{data['name']}'")
         pub = Pub.objects.create(
             name = data['name'],
             external_id = data['id'],
@@ -33,7 +34,7 @@ def create_pub_if_not_exists(city, data):
 def process_new_city(city_id):
     city = City.objects.filter(pk=city_id).first()
     if city:
-        print(f'Fetching pubs for {city}')
+        logging.debug(f'Fetching pubs for {city}')
         for bar in fetch_bars(city.name)['bars']:
             pub = create_pub_if_not_exists(city, bar)
 
