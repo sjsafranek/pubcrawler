@@ -281,7 +281,7 @@
 
                                     {% if user.is_authenticated %}
                                     // This is only for logged in users
-                                    let crawl_id = {% crawl.id %};
+                                    let crawl_id = {{ crawl.id }};
                                     console.log('Clicked feature:', feature.properties);
                                     console.log('Coordinates:', e.latlng);
                                     $.getJSON(`/api/v1/crawl/${crawl_id}/pub/${feature.properties.id}/${feature.properties.completed ? 'complete' : 'incomplete'}`)
