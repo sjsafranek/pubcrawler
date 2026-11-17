@@ -31,3 +31,4 @@ curl -H "Accept: application/json" "http://127.0.0.1:8000/api/v1/pubs/fix_missin
 ```
 
 
+curl -H "Accept: application/json" "http://127.0.0.1:8000/api/v1/pubs/search?latitude=45.52413&longitude=-122.66825&radius=1000"
