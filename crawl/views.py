@@ -29,6 +29,27 @@ def home(request):
     return HttpResponse("Welcome to the homepage!")
 
 
+def get_crawl_pubs(request, crawl_id):
+    crawl = get_object_or_404(Crawl, id=crawl_id)
+    queryset = [{**model_to_dict(stop.pub), **{'completed': stop.completed, 'position': stop.position}} for stop in CrawlPub.objects.filter(crawl=crawl).order_by('position')] 
+    df = pd.DataFrame(list(queryset))
+    df["longitude"] = df["longitude"].astype(float)
+    df["latitude"] = df["latitude"].astype(float)
+    df["created_at"] = df["created_at"].dt.strftime("%Y-%m-%dT%H:%M:%S")
+    df["updated_at"] = df["updated_at"].dt.strftime("%Y-%m-%dT%H:%M:%S")
+    gdf = gpd.GeoDataFrame(
+            df, 
+            geometry=gpd.points_from_xy(df["longitude"], df["latitude"]),
+            crs="EPSG:4326"
+        )
+    geojson_str = gdf.to_json(to_wgs84=True, na="drop")
+    return JsonResponse({
+        'data': {
+            'layer': json.loads(geojson_str)
+        }
+    })
+
+
 def crawl_detail(request, slug):
     crawl = get_object_or_404(Crawl, slug=slug)
     return render(request, "crawl/details.html", {
@@ -56,8 +77,7 @@ def import_pubs(request):
 
 
 def search_pubs(request):
-    # # 1. pull data and create inital dataframe
-    # queryset = Pub.objects.all().values('id', 'name', 'longitude', 'latitude')
+    # 1. pull data and create inital dataframe
     queryset = Pub.objects.all().values()
     df = pd.DataFrame(list(queryset))
     df["longitude"] = df["longitude"].astype(float)
