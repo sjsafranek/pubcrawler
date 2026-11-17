@@ -37,6 +37,7 @@ def get_crawl_pubs(request, crawl_id):
             **{'completed': stop.completed, 'position': stop.position}
         } for stop in CrawlPub.objects.filter(crawl=crawl).order_by('position')
     ] 
+    print(queryset[0])
     df = pd.DataFrame(queryset)
     df["longitude"] = df["longitude"].astype(float)
     df["latitude"] = df["latitude"].astype(float)
