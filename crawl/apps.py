@@ -6,3 +6,4 @@ class CrawlConfig(AppConfig):
 
     def ready(self):
         import crawl.signals  # Registers the signal handlers
+
