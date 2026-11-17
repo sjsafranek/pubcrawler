@@ -26,7 +26,7 @@ class Crawl(TimeStampedModel):
         super().save(*args, **kwargs)
 
     def get_absolute_url(self):
-        return reverse("crawl_detail", kwargs={"slug": self.slug})        
+        return reverse("view_crawl_page", kwargs={"slug": self.slug})        
 
 
 class Pub(TimeStampedModel):
