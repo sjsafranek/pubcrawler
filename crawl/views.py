@@ -32,7 +32,8 @@ def home(request):
 def get_crawl_pubs(request, crawl_id):
     crawl = get_object_or_404(Crawl, id=crawl_id)
     queryset = [{**model_to_dict(stop.pub), **{'completed': stop.completed, 'position': stop.position}} for stop in CrawlPub.objects.filter(crawl=crawl).order_by('position')] 
-    df = pd.DataFrame(list(queryset))
+    logger.info(queryset)
+    df = pd.DataFrame(queryset)
     df["longitude"] = df["longitude"].astype(float)
     df["latitude"] = df["latitude"].astype(float)
     df["created_at"] = df["created_at"].strftime("%Y-%m-%dT%H:%M:%S")
