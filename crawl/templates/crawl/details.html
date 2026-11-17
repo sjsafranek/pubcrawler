@@ -267,7 +267,7 @@ const IconCircleMarker = L.CircleMarker.extend({
                         pubLayer = new L.GeoJSON(data.data.layer, {
                             pointToLayer: function (feature, latlng) {
                                 //return L.marker(latlng, { icon: icon, pane: 'pubPane' });
-                                return IconCircleMarker(latlng, {
+                                return new IconCircleMarker(latlng, {
                                     radius: 6,
                                     fillColor: '#d3a10e',
                                     color: '#ffffff',
