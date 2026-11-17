@@ -5,6 +5,7 @@ source pubcrawler/bin/activate
 pip install django
 pip install gunicorn
 pip install osmnx
+pip install geopy
 
 python manage.py makemigrations
 python manage.py migrate

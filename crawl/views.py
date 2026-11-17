@@ -1,4 +1,5 @@
 import time
+import logging
 
 from django.db.models import Q
 from django.shortcuts import render
@@ -16,8 +17,10 @@ from .search import fetch_bars_nearby
 from .tasks import create_pub_if_not_exists
 
 
-MAX_RADIUS = 25000
+logger = logging.getLogger(__name__)
 
+
+MAX_RADIUS = 25000
 
 
 def home(request):
@@ -35,7 +38,7 @@ def crawl_detail(request, slug):
 def fix_missing_addresses(request):
     pubs = Pub.objects.filter(Q(address_street_name__isnull=True) | Q(address_street_name=''))
     for pub in pubs:
-        print(f'Fixing address for {pub}')
+        logger.debug(f'Fixing address for {pub}')
         location = reverse_geocode(pub.latitude, pub.longitude)
         # print(location['raw']['address'])
         pub.address_street_name = location['raw']['address'].get('road')
