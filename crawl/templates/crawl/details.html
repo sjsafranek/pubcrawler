@@ -101,47 +101,47 @@
             });
         }
 
-        function createPubIcon(number) {
-            return L.divIcon({
-                className: 'marker-pub',
-                html: `<span>&#127866;</span>`,
-                iconSize: [30, 30],   // Width and height of the circle
-                iconAnchor: [15, 15]  // Center point of the icon (half of iconSize)
-            });
-        }
+        // function createPubIcon(number) {
+        //     return L.divIcon({
+        //         className: 'marker-pub',
+        //         html: `<span>&#127866;</span>`,
+        //         iconSize: [30, 30],   // Width and height of the circle
+        //         iconAnchor: [15, 15]  // Center point of the icon (half of iconSize)
+        //     });
+        // }
 
-// Extend Leaflet's Canvas renderer
-L.Canvas.include({
-  _updateCircleWithIcon: function (layer) {
-    // Draw the standard circle first
-    this._updateCircle(layer);
+        // Extend Leaflet's Canvas renderer
+        L.Canvas.include({
+            _updateCircleWithIcon: function (layer) {
+                // Draw the standard circle first
+                this._updateCircle(layer);
 
-    if (!layer.options.iconText && !layer.options.iconImg) return;
+                if (!layer.options.iconText && !layer.options.iconImg) return;
 
-    const p = layer._point;
-    const ctx = this._ctx;
+                const p = layer._point;
+                const ctx = this._ctx;
 
-    ctx.save();
-    if (layer.options.iconImg && layer.options.iconImg.complete) {
-      const s = layer.options.iconSize || 16;
-      ctx.drawImage(layer.options.iconImg, p.x - s / 2, p.y - s / 2, s, s);
-    } else if (layer.options.iconText) {
-      ctx.fillStyle = layer.options.iconColor || '#ffffff';
-      ctx.font = layer.options.iconFont || 'bold 12px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(layer.options.iconText, p.x, p.y);
-    }
-    ctx.restore();
-  }
-});
+                ctx.save();
+                if (layer.options.iconImg && layer.options.iconImg.complete) {
+                    const s = layer.options.iconSize || 16;
+                    ctx.drawImage(layer.options.iconImg, p.x - s / 2, p.y - s / 2, s, s);
+                } else if (layer.options.iconText) {
+                    ctx.fillStyle = layer.options.iconColor || '#ffffff';
+                    ctx.font = layer.options.iconFont || 'bold 12px sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(layer.options.iconText, p.x, p.y);
+                }
+                ctx.restore();
+            }
+        });
 
-// Create a custom CircleMarker class
-const IconCircleMarker = L.CircleMarker.extend({
-  _updatePath: function () {
-    this._renderer._updateCircleWithIcon(this);
-  }
-});
+        // Create a custom CircleMarker class
+        const L.TextIconCircleMarker = L.CircleMarker.extend({
+            _updatePath: function () {
+                this._renderer._updateCircleWithIcon(this);
+            }
+        });
 
 
         // Initialize application
@@ -266,11 +266,9 @@ const IconCircleMarker = L.CircleMarker.extend({
                         pubLayer && pubLayer.remove();
                         pubLayer = new L.GeoJSON(data.data.layer, {
                             pointToLayer: function (feature, latlng) {
-                                //return L.marker(latlng, { icon: icon, pane: 'pubPane' });
-                                return new IconCircleMarker(latlng, {
+                                return new L.TextIconCircleMarker(latlng, {
                                     radius: 12,
                                     fillColor: '#d3a10e',
-                                    // color: '#ffffff',
                                     color: '#000000',
                                     weight: 2,
                                     fillOpacity: 0.8, 
