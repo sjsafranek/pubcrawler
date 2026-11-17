@@ -80,6 +80,7 @@ def import_pubs(request):
 def search_pubs(request):
     # 1. pull data and create inital dataframe
     queryset = Pub.objects.all().values()
+    logger.info(list(queryset)[:2])
     df = pd.DataFrame(list(queryset))
     df["longitude"] = df["longitude"].astype(float)
     df["latitude"] = df["latitude"].astype(float)
