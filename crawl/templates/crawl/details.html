@@ -208,7 +208,7 @@
             
             map.on('moveend zoomend resize', function(event) {
                 let bounds = L.rectangle(map.getBounds()).toGeoJSON();
-                let geom = encodeURIComponent(bounds);
+                let geom = encodeURIComponent(JSON.stringify(bounds));
                 console.log(bounds);
                 console.log(geom);
                 $.getJSON(`/api/v1/pubs/search?geom=${geom}`)
