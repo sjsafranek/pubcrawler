@@ -101,15 +101,6 @@
             });
         }
 
-        // function createPubIcon(number) {
-        //     return L.divIcon({
-        //         className: 'marker-pub',
-        //         html: `<span>&#127866;</span>`,
-        //         iconSize: [30, 30],   // Width and height of the circle
-        //         iconAnchor: [15, 15]  // Center point of the icon (half of iconSize)
-        //     });
-        // }
-
         // Extend Leaflet's Canvas renderer
         L.Canvas.include({
             _updateCircleWithIcon: function (layer) {
@@ -280,6 +271,19 @@
                                 if (feature.properties && feature.properties.name) {
                                     layer.bindPopup(feature.properties.name);
                                 }
+
+                                layer.on('click', function (e) {
+                                    console.log('Clicked feature:', feature.properties);
+                                    console.log('Coordinates:', e.latlng);
+                                    L.DomEvent.stopPropagation(e);
+
+                                    {% if user.is_authenticated %}
+                                        console.log("TEST");
+                                    {% else %}
+                                        
+                                    {% endif %}
+
+                                });
                             }
                         });
                         pubLayer.addTo(map);
@@ -300,3 +304,4 @@
     });
   </script>
 {% endblock %}
+
