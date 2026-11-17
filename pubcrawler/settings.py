@@ -26,6 +26,8 @@ SECRET_KEY = 'django-insecure-f%-^6iuh!^jp1vs4#nees3pnn-m^z=@mri8y0vsg4adc%i7xxt
 DEBUG = True
 
 ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
     'pubcrawler.thestefanproblem.rocks'
 ]
 

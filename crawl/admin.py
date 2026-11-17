@@ -1,16 +1,15 @@
 from django.contrib import admin
 
-from .models import City
+# from .models import City
 from .models import Crawl
 from .models import Pub
 from .models import CrawlPub
 from .forms import PubForm
 
 
-admin.site.register(City)
+# admin.site.register(City)
 admin.site.register(Crawl)
 admin.site.register(CrawlPub)
-
 
 @admin.register(Pub)
 class PubAdmin(admin.ModelAdmin):
@@ -24,4 +23,5 @@ class PubAdmin(admin.ModelAdmin):
         "address_city",
         "address_postcode"
     ]
-    search_fields = ["name"]
+    search_fields = ["name", "address_city", "address_postcode"]
+

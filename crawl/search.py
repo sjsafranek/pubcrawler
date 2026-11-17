@@ -97,7 +97,6 @@ def haversine_m(lat1, lon1, lat2, lon2) -> float:
 
 def fetch_bars_nearby(lat: float, lon: float, radius: float) -> dict:
     key = (round(lat, 5), round(lon, 5), round(radius))
-    print(key)
     if key in _nearby_cache:
         return _nearby_cache[key]
 
