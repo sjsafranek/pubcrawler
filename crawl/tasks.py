@@ -4,6 +4,8 @@ from django.tasks import task
 
 from .models import Pub
 from .search import fetch_bars
+from .geocoder import reverse_geocode
+
 
 logger = logging.getLogger(__name__)
 
@@ -66,4 +68,3 @@ def fix_missing_addresses():
         pub.address_country_code = location['raw']['address'].get('country_code')
         pub.save()
         time.sleep(2.5)
- 
