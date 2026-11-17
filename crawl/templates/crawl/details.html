@@ -108,7 +108,41 @@
                 iconSize: [30, 30],   // Width and height of the circle
                 iconAnchor: [15, 15]  // Center point of the icon (half of iconSize)
             });
-        }        
+        }
+
+// Extend Leaflet's Canvas renderer
+L.Canvas.include({
+  _updateCircleWithIcon: function (layer) {
+    // Draw the standard circle first
+    this._updateCircle(layer);
+
+    if (!layer.options.iconText && !layer.options.iconImg) return;
+
+    const p = layer._point;
+    const ctx = this._ctx;
+
+    ctx.save();
+    if (layer.options.iconImg && layer.options.iconImg.complete) {
+      const s = layer.options.iconSize || 16;
+      ctx.drawImage(layer.options.iconImg, p.x - s / 2, p.y - s / 2, s, s);
+    } else if (layer.options.iconText) {
+      ctx.fillStyle = layer.options.iconColor || '#ffffff';
+      ctx.font = layer.options.iconFont || 'bold 12px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(layer.options.iconText, p.x, p.y);
+    }
+    ctx.restore();
+  }
+});
+
+// Create a custom CircleMarker class
+const IconCircleMarker = L.CircleMarker.extend({
+  _updatePath: function () {
+    this._renderer._updateCircleWithIcon(this);
+  }
+});
+
 
         // Initialize application
         $(function () {
@@ -120,15 +154,13 @@
             // Full-height two-pane layout on large screens only
             if (window.matchMedia("(min-width: 992px)").matches) $(".row").first().addClass("vh-100");
 
-            const map = L.map("map").setView([20, 0], 2);
+            const map = L.map("map", {preferCanvas: true}).setView([20, 0], 2);
             L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
                 maxZoom: 19, 
                 attribution: "&copy; OpenStreetMap contributors",
                 referrerPolicy: 'no-referrer-when-downgrade'
             }).addTo(map);
             
-            map.createPane('pubPane');
-            map.getPane('pubPane').style.zIndex = 410;
             map.createPane('crawlPane');
             map.getPane('crawlPane').style.zIndex = 420;
             const crawlLayer = L.layerGroup().addTo(map);
@@ -220,6 +252,9 @@
             //         pathLayer.addTo(map);
             //     });
 
+            // Show nearby Pubs             
+            map.createPane('pubPane');
+            map.getPane('pubPane').style.zIndex = 410;            
             
             let pubLayer;
             function renderPubLayer() {
@@ -227,11 +262,20 @@
                 let geom = encodeURIComponent(JSON.stringify(bounds));
                 $.getJSON(`/api/v1/pubs/search?geom=${geom}`)
                     .done(data => {
-                        let icon = createPubIcon();
+                        // let icon = createPubIcon();
                         pubLayer && pubLayer.remove();
                         pubLayer = new L.GeoJSON(data.data.layer, {
                             pointToLayer: function (feature, latlng) {
-                                return L.marker(latlng, { icon: icon, pane: 'pubPane' });
+                                //return L.marker(latlng, { icon: icon, pane: 'pubPane' });
+                                return IconCircleMarker(latlng, {
+                                    radius: 6,
+                                    fillColor: '#d3a10e',
+                                    color: '#ffffff',
+                                    weight: 1,
+                                    fillOpacity: 0.8, 
+                                    iconText: '&#127866;', 
+                                    pane: 'pubPane' 
+                                });
                             },
                             onEachFeature: function (feature, layer) {
                                 if (feature.properties && feature.properties.name) {
@@ -240,7 +284,6 @@
                             }
                         });
                         pubLayer.addTo(map);
-                        pubLayer.bringToBack();
                     });
             }
 
