@@ -145,7 +145,11 @@
             // Full-height two-pane layout on large screens only
             if (window.matchMedia("(min-width: 992px)").matches) $(".row").first().addClass("vh-100");
 
-            const map = L.map("map", {preferCanvas: true}).setView([20, 0], 2);
+            const map = L.map("map", {
+                doubleClickZoom: false, 
+                preferCanvas: true
+            }).setView([20, 0], 2);
+            
             L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
                 maxZoom: 19, 
                 attribution: "&copy; OpenStreetMap contributors",
@@ -272,17 +276,20 @@
                                     layer.bindPopup(feature.properties.name);
                                 }
 
-                                layer.on('click', function (e) {
-                                    console.log('Clicked feature:', feature.properties);
-                                    console.log('Coordinates:', e.latlng);
+                                layer.on('dblclick', function (e) {
                                     L.DomEvent.stopPropagation(e);
 
                                     {% if user.is_authenticated %}
-                                        console.log("TEST");
+                                    // This is only for logged in users
+                                    console.log('Clicked feature:', feature.properties);
+                                    console.log('Coordinates:', e.latlng);                                    
+                                    console.log(feature.properties.id, crawl.id);
+                                    $.getJSON(`/api/v1/crawl/${crawl.id}/pub/${feature.properties.id}/${feature.properties.completed ? 'complete' : 'incomplete'}`)
+                                        .done(response => { 
+                                            console.log(response); 
+                                        });
                                     {% else %}
-                                        
                                     {% endif %}
-
                                 });
                             }
                         });

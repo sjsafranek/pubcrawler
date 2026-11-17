@@ -25,6 +25,34 @@ logger = logging.getLogger(__name__)
 MAX_RADIUS = 25000
 
 
+
+
+def buildSuccessResponse(**kwargs):
+    return {
+        'status': 'ok',
+        'data': {
+            **kwargs
+        }
+    }
+
+def buildErrorResponse(message, code=500):
+    return {
+        'status': 'error',
+        'error': {
+            'code': code,
+            'message': message
+        }
+    }
+
+def buildMethodNotAllowedResponse():
+    return buildErrorResponse('Method Not Allowed', 405)
+
+def buildMissingParameterResponse(parameter_name):
+    return buildErrorResponse( f"Missing Parameter: '{parameter_name}'", 404)
+
+
+
+
 def home(request):
     return HttpResponse("Welcome to the homepage!")
 
@@ -54,11 +82,18 @@ def get_crawl_pubs(request, crawl_id):
             crs="EPSG:4326"
         )
     geojson_str = gdf.to_json(to_wgs84=True, na="drop")
-    return JsonResponse({
-        'data': {
-            'layer': json.loads(geojson_str)
-        }
-    })
+    api_response = buildSuccessResponse(layer=json.loads(geojson_str))
+    return JsonResponse(api_response)
+
+
+def toggle_crawl_pub(request, crawl_id, pub_id, yn)
+    crawl = get_object_or_404(Crawl, id=crawl_id)
+    pub = get_object_or_404(Pub, id=pub_id)
+    stop = CrawlPub.objects.filter(crawl=crawl, pub=pub).first()
+    stop.completed = yn;
+    stop.save()
+    api_response = buildSuccessResponse()
+    return JsonResponse(api_response)
 
 
 def import_pubs(request):
@@ -72,11 +107,8 @@ def import_pubs(request):
     for data in pubs:
         pub = create_pub_if_not_exists(data)
 
-    return JsonResponse({
-        'data': {
-            'pubs': len(pubs)
-        }
-    })
+    api_response = buildSuccessResponse(pubs=len(pubs))
+    return JsonResponse(api_response)
 
 
 def search_pubs(request):
@@ -99,11 +131,8 @@ def search_pubs(request):
         area = gpd.read_file(geom)
         within_gdf = gpd.sjoin(gdf, area, how="inner", predicate="within")
         geojson_str = within_gdf.to_json(to_wgs84=True, na="drop")
-        return JsonResponse({
-            'data': {
-                'layer': json.loads(geojson_str)
-            }
-        })
+        api_response = buildSuccessResponse(layer=json.loads(geojson_str))
+        return JsonResponse(api_response)
 
     # Get request attributes
     longitude = float(request.GET.get("longitude"))
@@ -125,9 +154,6 @@ def search_pubs(request):
     # Optional: Force re-projection to WGS84 (EPSG:4326) and drop missing values
     geojson_str = filtered_gdf.to_json(to_wgs84=True, na="drop")
 
-    return JsonResponse({
-        'data': {
-            'layer': json.loads(geojson_str)
-        }
-    })
+    api_response = buildSuccessResponse(layer=json.loads(geojson_str))
+    return JsonResponse(api_response)
 
