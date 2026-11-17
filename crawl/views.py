@@ -1,7 +1,7 @@
 import time
 import logging
 
-from django.db.models import Q
+# from django.db.models import Q
 from django.shortcuts import render
 from django.shortcuts import get_object_or_404
 from django.forms.models import model_to_dict
@@ -35,25 +35,25 @@ def crawl_detail(request, slug):
     })
 
 
-def fix_missing_addresses(request):
-    pubs = Pub.objects.filter(Q(address_street_name__isnull=True) | Q(address_street_name=''))
-    for pub in pubs:
-        logger.debug(f'Fixing address for {pub}')
-        location = reverse_geocode(pub.latitude, pub.longitude)
-        # print(location['raw']['address'])
-        pub.address_street_name = location['raw']['address'].get('road')
-        pub.address_city = location['raw']['address'].get('city')
-        pub.address_state = location['raw']['address'].get('state')
-        pub.address_postcode = location['raw']['address'].get('postcode')
-        pub.address_country_code = location['raw']['address'].get('country_code')
-        pub.save()
-        time.sleep(2.5)
+# def fix_missing_addresses(request):
+#     pubs = Pub.objects.filter(Q(address_street_name__isnull=True) | Q(address_street_name=''))
+#     for pub in pubs:
+#         logger.debug(f'Fixing address for {pub}')
+#         location = reverse_geocode(pub.latitude, pub.longitude)
+#         # print(location['raw']['address'])
+#         pub.address_street_name = location['raw']['address'].get('road')
+#         pub.address_city = location['raw']['address'].get('city')
+#         pub.address_state = location['raw']['address'].get('state')
+#         pub.address_postcode = location['raw']['address'].get('postcode')
+#         pub.address_country_code = location['raw']['address'].get('country_code')
+#         pub.save()
+#         time.sleep(2.5)
 
-    return JsonResponse({
-        'data': {
-            'addresses': len(pubs)
-        }
-    })
+#     return JsonResponse({
+#         'data': {
+#             'addresses': len(pubs)
+#         }
+#     })
 
 
 def import_pubs(request):

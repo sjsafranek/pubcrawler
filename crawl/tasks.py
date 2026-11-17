@@ -1,4 +1,5 @@
 import logging
+from django.db.models import Q
 from django.tasks import task
 
 from .models import Pub
@@ -37,3 +38,17 @@ def create_pub_if_not_exists(data):
 #         for bar in fetch_bars(city.name)['bars']:
 #             pub = create_pub_if_not_exists(bar)
 
+
+def fix_missing_addresses():
+    pubs = Pub.objects.filter(Q(address_street_name__isnull=True) | Q(address_street_name=''))
+    for pub in pubs:
+        logger.debug(f'Fixing address for {pub}')
+        location = reverse_geocode(pub.latitude, pub.longitude)
+        # print(location['raw']['address'])
+        pub.address_street_name = location['raw']['address'].get('road')
+        pub.address_city = location['raw']['address'].get('city')
+        pub.address_state = location['raw']['address'].get('state')
+        pub.address_postcode = location['raw']['address'].get('postcode')
+        pub.address_country_code = location['raw']['address'].get('country_code')
+        pub.save()
+        time.sleep(2.5)

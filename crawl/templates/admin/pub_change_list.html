@@ -2,10 +2,10 @@
 
 {% block object-tools-items %}
     <li>
-        <form action="run-bulk-job/" method="post" style="display:inline;">
+        <form action="fix-missing-addresses/" method="post" style="display:inline;">
             {% csrf_token %}
             <button type="submit" class="button" style="background-color: #417690; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;">
-                Run Bulk Job
+                Fix Missing Addresses
             </button>
         </form>
     </li>

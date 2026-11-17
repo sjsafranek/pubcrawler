@@ -6,6 +6,7 @@ from .models import Crawl
 from .models import Pub
 from .models import CrawlPub
 from .forms import PubForm
+from .tasks import fix_missing_addresses
 
 
 admin.site.register(Crawl)
@@ -30,17 +31,16 @@ class PubAdmin(admin.ModelAdmin):
         urls = super().get_urls()
         custom_urls = [
             path(
-                "run-bulk-job/",
-                self.admin_site.admin_view(self.run_bulk_job),
-                name="yourmodel-run-bulk-job",
+                "fix-missing-addresses/",
+                self.admin_site.admin_view(self.fix_missing_addresses),
+                name="pub-fix-missing-addresses",
             ),
         ]
         return custom_urls + urls
 
-    def run_bulk_job(self, request):
+    def fix_missing_addresses(self, request):
         if request.method == "POST":
-            # Trigger your bulk job or Celery task here
-            # e.g., run_heavy_task.delay()
+            fix_missing_addresses()
             self.message_user(request, "Bulk job started successfully.")
         return HttpResponseRedirect("../")
 
