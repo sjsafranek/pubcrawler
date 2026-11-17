@@ -35,8 +35,8 @@ def get_crawl_pubs(request, crawl_id):
     df = pd.DataFrame(list(queryset))
     df["longitude"] = df["longitude"].astype(float)
     df["latitude"] = df["latitude"].astype(float)
-    df["created_at"] = df["created_at"].dt.strftime("%Y-%m-%dT%H:%M:%S")
-    df["updated_at"] = df["updated_at"].dt.strftime("%Y-%m-%dT%H:%M:%S")
+    df["created_at"] = df["created_at"].strftime("%Y-%m-%dT%H:%M:%S")
+    df["updated_at"] = df["updated_at"].strftime("%Y-%m-%dT%H:%M:%S")
     gdf = gpd.GeoDataFrame(
             df, 
             geometry=gpd.points_from_xy(df["longitude"], df["latitude"]),
