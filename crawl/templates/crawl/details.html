@@ -137,7 +137,7 @@
         });
 
         // Create a custom CircleMarker class
-        const L.TextIconCircleMarker = L.CircleMarker.extend({
+        L.TextIconCircleMarker = L.CircleMarker.extend({
             _updatePath: function () {
                 this._renderer._updateCircleWithIcon(this);
             }
