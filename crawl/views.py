@@ -87,6 +87,9 @@ def get_crawl_pubs(request, crawl_id):
 
 
 def toggle_crawl_pub(request, crawl_id, pub_id, yn):
+    if not request.user.is_authenticated:
+        api_response = buildMethodNotAllowedResponse()
+        return JsonResponse(api_response) 
     crawl = get_object_or_404(Crawl, id=crawl_id)
     pub = get_object_or_404(Pub, id=pub_id)
     stop = CrawlPub.objects.filter(crawl=crawl, pub=pub).first()
