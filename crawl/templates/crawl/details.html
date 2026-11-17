@@ -284,7 +284,7 @@
                                     let crawl_id = {{ crawl.id }};
                                     console.log('Clicked feature:', feature.properties);
                                     console.log('Coordinates:', e.latlng);
-                                    $.getJSON(`/api/v1/crawl/${crawl_id}/pub/${feature.properties.id}/${feature.properties.completed ? 'complete' : 'incomplete'}`)
+                                    $.getJSON(`/api/v1/crawl/${crawl_id}/pub/${feature.properties.id}/add`)
                                         .done(response => { 
                                             console.log(response); 
                                         });
