@@ -1,13 +1,13 @@
 from django.contrib import admin
+from django.http import HttpResponseRedirect
+from django.urls import path
 
-# from .models import City
 from .models import Crawl
 from .models import Pub
 from .models import CrawlPub
 from .forms import PubForm
 
 
-# admin.site.register(City)
 admin.site.register(Crawl)
 admin.site.register(CrawlPub)
 
@@ -43,3 +43,4 @@ class PubAdmin(admin.ModelAdmin):
             # e.g., run_heavy_task.delay()
             self.message_user(request, "Bulk job started successfully.")
         return HttpResponseRedirect("../")
+
