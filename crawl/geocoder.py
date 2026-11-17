@@ -7,7 +7,6 @@ geolocator = Nominatim(user_agent="pubcrawler")
 
 def forward_geocode(address_string):
     """Converts an address string into latitude and longitude coordinates."""
-    # timeout parameter prevents the script from hanging on poor network connections
     location = geolocator.geocode(address_string, timeout=15)
     if location:
         return {
