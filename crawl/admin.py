@@ -14,7 +14,7 @@ admin.site.register(CrawlPub)
 @admin.register(Pub)
 class PubAdmin(admin.ModelAdmin):
     form = PubForm
-    change_list_template = "admin/pub_changelist.html"
+    change_list_template = "admin/pub_change_list.html"
     change_form_template = "admin/geo_change_form.html"
     list_display = [
         "name",
