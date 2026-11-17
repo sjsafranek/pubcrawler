@@ -268,11 +268,11 @@ const IconCircleMarker = L.CircleMarker.extend({
                             pointToLayer: function (feature, latlng) {
                                 //return L.marker(latlng, { icon: icon, pane: 'pubPane' });
                                 return new IconCircleMarker(latlng, {
-                                    radius: 16,
+                                    radius: 12,
                                     fillColor: '#d3a10e',
                                     // color: '#ffffff',
                                     color: '#000000',
-                                    weight: 1,
+                                    weight: 2,
                                     fillOpacity: 0.8, 
                                     iconText: '🍺', 
                                     pane: 'pubPane' 
