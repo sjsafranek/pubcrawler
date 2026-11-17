@@ -205,6 +205,18 @@
             //         pathLayer.addTo(map);
             //     });
 
+            
+            map.on('moveend zoomend resize', function(event) {
+                let bounds = L.rectangle(map.getBounds()).toGeoJSON();
+                let geom = encodeURIComponent(bounds);
+                console.log(bounds);
+                console.log(geom);
+                $.getJSON(`/api/v1/pubs/search?geom=${geom}`)
+                    .done(data => {
+                        console.log(data);
+                    });
+            })
+
             window.LMAP = map;
         }
 
