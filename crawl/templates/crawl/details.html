@@ -230,9 +230,8 @@
                         let icon = createPubIcon();
                         pubLayer && pubLayer.remove();
                         pubLayer = new L.GeoJSON(data.data.layer, {
-                            pane: 'pubPane',
                             pointToLayer: function (feature, latlng) {
-                                return L.marker(latlng, { icon: icon });
+                                return L.marker(latlng, { icon: icon, pane: 'pubPane' });
                             },
                             onEachFeature: function (feature, layer) {
                                 if (feature.properties && feature.properties.name) {
