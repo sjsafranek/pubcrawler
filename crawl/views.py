@@ -86,7 +86,7 @@ def get_crawl_pubs(request, crawl_id):
     return JsonResponse(api_response)
 
 
-def toggle_crawl_pub(request, crawl_id, pub_id, yn)
+def toggle_crawl_pub(request, crawl_id, pub_id, yn):
     crawl = get_object_or_404(Crawl, id=crawl_id)
     pub = get_object_or_404(Pub, id=pub_id)
     stop = CrawlPub.objects.filter(crawl=crawl, pub=pub).first()
