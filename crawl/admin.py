@@ -41,6 +41,6 @@ class PubAdmin(admin.ModelAdmin):
     def fix_missing_addresses(self, request):
         if request.method == "POST":
             fix_missing_addresses()
-            self.message_user(request, "Bulk job started successfully.")
+            self.message_user(request, "Fix Addresses started successfully.")
         return HttpResponseRedirect("../")
 
