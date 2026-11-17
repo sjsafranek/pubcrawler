@@ -127,7 +127,7 @@
                 referrerPolicy: 'no-referrer-when-downgrade'
             }).addTo(map);
             
-            const layer = L.layerGroup().addTo(map);
+            const crawlLayer = L.layerGroup().addTo(map);
 
             const $status = $("#status"), 
                   $list = $("#list"), 
@@ -171,14 +171,14 @@
                 const pubs = $.grep(allPubs, pub =>
                     (!type || pub.subtype === type) && (!q || pub.name.toLowerCase().includes(q)));
 
-                layer.clearLayers();
+                crawlLayer.clearLayers();
                 $list.empty();
 
                 $.each(pubs, (i, pub) => {
                     let icon = !pub.completed ? createPubPendingIcon(i+1) : createPubCompletedIcon(i+1)
                     const marker = L.marker([pub.latitude, pub.longitude], { icon: icon });
                     marker.bindPopup(popupContent(pub));
-                    marker.addTo(layer);
+                    marker.addTo(crawlLayer);
 
                     $("<button>", { type: "button", class: "list-group-item list-group-item-action" })
                         .append($("<div>", { class: "fw-semibold" }).text(pub.name))
@@ -236,6 +236,7 @@
                             }
                         });
                         pubLayer.addTo(map);
+                        crawlLayer.bringToFront();
                     });
             }
 
@@ -245,7 +246,6 @@
                 pubLayerRenderTimeout = setTimeout(renderPubLayer, 1500);
             });
 
-            
             renderPubLayer();
         }
 
