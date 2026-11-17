@@ -1,7 +1,6 @@
 import logging
 from django.tasks import task
 
-# from .models import City
 from .models import Pub
 from .search import fetch_bars
 
@@ -25,7 +24,6 @@ def create_pub_if_not_exists(data):
             address_postcode = data['postcode'],
             latitude = data['lat'],
             longitude = data['lon']
-            # city = city
         )
         return pub
     return pub
