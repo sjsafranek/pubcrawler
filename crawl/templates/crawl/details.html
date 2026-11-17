@@ -127,6 +127,10 @@
                 referrerPolicy: 'no-referrer-when-downgrade'
             }).addTo(map);
             
+            map.createPane('pubPane');
+            map.getPane('pubPane').style.zIndex = 410;
+            map.createPane('crawlPane');
+            map.getPane('crawlPane').style.zIndex = 420;
             const crawlLayer = L.layerGroup().addTo(map);
 
             const $status = $("#status"), 
@@ -176,7 +180,7 @@
 
                 $.each(pubs, (i, pub) => {
                     let icon = !pub.completed ? createPubPendingIcon(i+1) : createPubCompletedIcon(i+1)
-                    const marker = L.marker([pub.latitude, pub.longitude], { icon: icon });
+                    const marker = L.marker([pub.latitude, pub.longitude], { icon: icon, pane: 'crawlPane' });
                     marker.bindPopup(popupContent(pub));
                     marker.addTo(crawlLayer);
 
@@ -226,6 +230,7 @@
                         let icon = createPubIcon();
                         pubLayer && pubLayer.remove();
                         pubLayer = new L.GeoJSON(data.data.layer, {
+                            pane: 'pubPane',
                             pointToLayer: function (feature, latlng) {
                                 return L.marker(latlng, { icon: icon });
                             },
