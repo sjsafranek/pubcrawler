@@ -72,6 +72,18 @@ def search_pubs(request):
         crs="EPSG:4326"
     )
 
+    # try using geom
+    geom = request.GET.get("geom")
+    if (geom):
+        area = gpd.read_file(geom)
+        within_gdf = gpd.sjoin(gdf, area, how="inner", predicate="within")
+        geojson_str = within_gdf.to_json(to_wgs84=True, na="drop")
+        return JsonResponse({
+            'data': {
+                'layer': json.loads(geojson_str)
+            }
+        })
+
     # Get request attributes
     longitude = float(request.GET.get("longitude"))
     latitude = float(request.GET.get("latitude"))
