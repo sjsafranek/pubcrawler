@@ -33,16 +33,13 @@ def get_crawl_pubs(request, crawl_id):
     crawl = get_object_or_404(Crawl, id=crawl_id)
     queryset = [
         {
-            **model_to_dict(stop.pub, fields=[field.name for field in stop.pub._meta.get_fields()]), 
+            **model_to_dict(stop.pub), 
             **{'completed': stop.completed, 'position': stop.position}
         } for stop in CrawlPub.objects.filter(crawl=crawl).order_by('position')
-    ] 
-    print(queryset[0])
+    ]
     df = pd.DataFrame(queryset)
     df["longitude"] = df["longitude"].astype(float)
     df["latitude"] = df["latitude"].astype(float)
-    df["created_at"] = df["created_at"].dt.strftime("%Y-%m-%dT%H:%M:%S")
-    df["updated_at"] = df["updated_at"].dt.strftime("%Y-%m-%dT%H:%M:%S")
     gdf = gpd.GeoDataFrame(
             df, 
             geometry=gpd.points_from_xy(df["longitude"], df["latitude"]),
@@ -84,13 +81,10 @@ def import_pubs(request):
 
 def search_pubs(request):
     # 1. pull data and create inital dataframe
-    queryset = Pub.objects.all().values()
-    logger.info(list(queryset)[:2])
-    df = pd.DataFrame(list(queryset))
+    pubs = Pub.objects.all().values()
+    df = pd.DataFrame([model_to_dict(pub) for pub in pubs])
     df["longitude"] = df["longitude"].astype(float)
     df["latitude"] = df["latitude"].astype(float)
-    df["created_at"] = df["created_at"].dt.strftime("%Y-%m-%dT%H:%M:%S")
-    df["updated_at"] = df["updated_at"].dt.strftime("%Y-%m-%dT%H:%M:%S")
 
     # 2. Create the GeoDataFrame (match the SRID of your Django model, e.g., 4326)
     gdf = gpd.GeoDataFrame(
