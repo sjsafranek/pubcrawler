@@ -59,8 +59,12 @@ class CrawlPub(models.Model):
         ordering = ["position"]
         constraints = [
             models.UniqueConstraint(
+                fields=["crawl", "pub"],
+                name="unique_pub_per_crawl"
+            ),
+            models.UniqueConstraint(
                 fields=["crawl", "position"],
-                name="unique_pub_position_per_crawl"
+                name="unique_position_per_crawl"
             )
         ]
 
