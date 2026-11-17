@@ -60,7 +60,7 @@ def fix_missing_addresses():
         logger.debug(f'Fixing address for {pub}')
         location = reverse_geocode(pub.latitude, pub.longitude)
         # print(location['raw']['address'])
-        pub.address_street_number = locatino['raw']['address'].get('house_number')
+        pub.address_street_number = location['raw']['address'].get('house_number')
         pub.address_street_name = location['raw']['address'].get('road')
         pub.address_city = location['raw']['address'].get('city')
         pub.address_state = location['raw']['address'].get('state')
