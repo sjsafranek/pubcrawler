@@ -81,8 +81,8 @@ def import_pubs(request):
 
 def search_pubs(request):
     # 1. pull data and create inital dataframe
-    pubs = Pub.objects.all().values()
-    df = pd.DataFrame([model_to_dict(pub) for pub in pubs])
+    # pubs = Pub.objects.all().values()
+    df = pd.DataFrame([model_to_dict(pub) for pub in Pub.objects.all()])
     df["longitude"] = df["longitude"].astype(float)
     df["latitude"] = df["latitude"].astype(float)
 
