@@ -11,6 +11,8 @@
 
             /* Map Markers */
             .marker-pub {
+                background-color: #d3a10e;
+
                 color: #ffffff;
                 border: 2px solid #ffffff;
                 border-radius: 50%;
@@ -94,6 +96,15 @@
             return L.divIcon({
                 className: 'marker-pub marker-pub-completed',
                 html: `<span>${number}</span>`,
+                iconSize: [30, 30],   // Width and height of the circle
+                iconAnchor: [15, 15]  // Center point of the icon (half of iconSize)
+            });
+        }
+
+        function createPubIcon(number) {
+            return L.divIcon({
+                className: 'marker-pub',
+                html: `<span>&#127866;</span>`,
                 iconSize: [30, 30],   // Width and height of the circle
                 iconAnchor: [15, 15]  // Center point of the icon (half of iconSize)
             });
@@ -212,12 +223,20 @@
             function renderPubLayer() {
                 let bounds = L.rectangle(map.getBounds()).toGeoJSON();
                 let geom = encodeURIComponent(JSON.stringify(bounds));
-                console.log(bounds);
-                console.log(geom);
                 $.getJSON(`/api/v1/pubs/search?geom=${geom}`)
                     .done(data => {
+                        let icon = createPubIcon();
                         pubLayer && pubLayer.remove();
-                        pubLayer = new L.GeoJSON(data.data.layer);
+                        pubLayer = new L.GeoJSON(data.data.layer, {
+                            pointToLayer: function (feature, latlng) {
+                                return L.marker(latlng, { icon: icon });
+                            },
+                            onEachFeature: function (feature, layer) {
+                                if (feature.properties && feature.properties.name) {
+                                    layer.bindPopup(feature.properties.name);
+                                }
+                            }
+                        });
                         pubLayer.addTo(map);
                     });
             }
@@ -227,10 +246,12 @@
                 clearTimeout(pubLayerRenderTimeout);
                 pubLayerRenderTimeout = setTimeout(renderPubLayer, 1500);
             });
-            
+
+
+            render();
+            renderPubLayer();
         }
 
-        render();
     });
   </script>
 {% endblock %}
