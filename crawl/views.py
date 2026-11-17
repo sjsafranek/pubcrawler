@@ -72,7 +72,7 @@ def search_pubs(request):
         crs="EPSG:4326"
     )
 
-    # try using geom
+    # Use geom if supplied
     geom = request.GET.get("geom")
     if (geom):
         area = gpd.read_file(geom)

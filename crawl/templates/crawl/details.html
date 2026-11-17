@@ -117,7 +117,7 @@
             }).addTo(map);
             
             const layer = L.layerGroup().addTo(map);
-            let pathLayer;
+            // let pathLayer;
 
             const $status = $("#status"), 
                   $list = $("#list"), 
@@ -206,6 +206,7 @@
             //     });
 
             
+            let pubLayer;
             map.on('moveend zoomend resize', function(event) {
                 let bounds = L.rectangle(map.getBounds()).toGeoJSON();
                 let geom = encodeURIComponent(JSON.stringify(bounds));
@@ -213,7 +214,9 @@
                 console.log(geom);
                 $.getJSON(`/api/v1/pubs/search?geom=${geom}`)
                     .done(data => {
-                        console.log(data);
+                        pubLayer && pubLayer.remove();
+                        pubLayer = new L.GeoJSON(data.data.layer);
+                        pubLayer.addTo(map);
                     });
             })
 
