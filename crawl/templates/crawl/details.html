@@ -206,8 +206,10 @@
             //     });
 
             
+
+
             let pubLayer;
-            map.on('moveend zoomend resize', function(event) {
+            function renderPubLayer() {
                 let bounds = L.rectangle(map.getBounds()).toGeoJSON();
                 let geom = encodeURIComponent(JSON.stringify(bounds));
                 console.log(bounds);
@@ -218,9 +220,14 @@
                         pubLayer = new L.GeoJSON(data.data.layer);
                         pubLayer.addTo(map);
                     });
-            })
+            }
 
-            window.LMAP = map;
+            let pubLayerRenderTimeout;
+            map.on('moveend zoomend resize', function(event) {
+                clearTimeout(pubLayerRenderTimeout);
+                pubLayerRenderTimeout = setTimeout(renderPubLayer, 1500);
+            });
+            
         }
 
         render();
