@@ -199,10 +199,12 @@
                 crawlLayer.clearLayers();
                 $list.empty();
 
+                // TODO :: Make this a geojson layer
                 $.each(pubs, (i, pub) => {
                     let icon = !pub.completed ? createPubPendingIcon(i+1) : createPubCompletedIcon(i+1)
                     const marker = L.marker([pub.latitude, pub.longitude], { icon: icon, pane: 'crawlPane' });
-                    marker.bindPopup(popupContent(pub));
+                    let content = popupContent(pub);
+                    marker.bindPopup(content);
                     marker.addTo(crawlLayer);
 
                     $("<button>", { type: "button", class: "list-group-item list-group-item-action" })
@@ -220,6 +222,12 @@
 
                     // Remove pub to crawl
                     marker.on({
+                        'mouseover': function (e) {
+                            marker.openPopup();
+                        },
+                        'mouseout': function (e) {
+                            marker.closePopup();
+                        },
                         'dblclick': function (e) {
                             L.DomEvent.stopPropagation(e);
                             {% if user.is_authenticated %}
@@ -258,7 +266,8 @@
                     },
                     onEachFeature: function (feature, layer) {
                         if (feature.properties && feature.properties.name) {
-                            layer.bindPopup(feature.properties.name);
+                            let content = popupContent(feature.properties);
+                            layer.bindPopup(content);
                         }
                         layer.on({
                             'mouseover': function (e) {
