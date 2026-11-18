@@ -139,7 +139,7 @@
         $(function () {
 
             // Parse the JSON data safely in JavaScript
-            const allPubs = JSON.parse(document.getElementById('pubs-json').textContent);
+            var allPubs = JSON.parse(document.getElementById('pubs-json').textContent);
             console.log(allPubs);
 
             // Full-height two-pane layout on large screens only
