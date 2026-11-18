@@ -223,6 +223,24 @@
                             marker.openPopup();
                         })
                         .appendTo($list);
+
+                    {% if user.is_authenticated %}
+                    // Remove pub to crawl
+                    marker.on({
+                        'dblclick': function (e) {
+                            L.DomEvent.stopPropagation(e);
+                            {% if user.is_authenticated %}
+                            // Remove pub to crawl
+                            let crawl_id = {{ crawl.id }};
+                            $.getJSON(`/api/v1/crawl/${crawl_id}/pub/${pub.id}/remove`)
+                                .done(response => { 
+                                    allPubs = allPubs.filter(d => d.id != pub.id);
+                                    render();
+                                });
+                            {% else %}
+                            {% endif %}
+                        }
+                    });
             });
 
             if (pubs.length) map.fitBounds(L.latLngBounds($.map(pubs, pub => [[pub.latitude, pub.longitude]])).pad(0.1));
@@ -285,7 +303,6 @@
                                     },
                                     'dblclick': function (e) {
                                         L.DomEvent.stopPropagation(e);
-
                                         {% if user.is_authenticated %}
                                         // Add pub to crawl
                                         let crawl_id = {{ crawl.id }};

@@ -100,7 +100,12 @@ def toggle_crawl_pub(request, crawl_id, pub_id, action):
         stop.save()
         api_response = buildSuccessResponse(pub={**model_to_dict(stop.pub), **{'completed': stop.completed, 'position': stop.position}})
         return JsonResponse(api_response)
-    
+    elif 'remove' == action:
+        stop = CrawlPub.objects.get(crawl=crawl, pub=pub)
+        stop.delete()
+        api_response = buildSuccessResponse()
+        return JsonResponse(api_response) 
+        
     # TODO
     stop = CrawlPub.objects.filter(crawl=crawl, pub=pub).first()
     stop.completed = yn;
