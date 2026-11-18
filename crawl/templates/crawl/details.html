@@ -276,14 +276,21 @@
                                     layer.bindPopup(feature.properties.name);
                                 }
 
+                                // 2. Open on hover, close on leave
+                                layer.on('mouseover', function (e) {
+                                    layer.openPopup();
+                                });
+
+                                layer.on('mouseout', function (e) {
+                                    layer.closePopup();
+                                });
+
                                 layer.on('dblclick', function (e) {
                                     L.DomEvent.stopPropagation(e);
 
                                     {% if user.is_authenticated %}
-                                    // This is only for logged in users
+                                    // Add pub to crawl
                                     let crawl_id = {{ crawl.id }};
-                                    console.log('Clicked feature:', feature.properties);
-                                    console.log('Coordinates:', e.latlng);
                                     $.getJSON(`/api/v1/crawl/${crawl_id}/pub/${feature.properties.id}/add`)
                                         .done(response => { 
                                             allPubs.push(response.data.pub);
