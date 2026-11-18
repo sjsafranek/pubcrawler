@@ -228,7 +228,6 @@
                             marker._icon.classList.add('marker-pub-active');
                         })
                         .on("mouseout", function(event) {
-                            console.log(marker);
                             marker._icon.classList.remove('marker-pub-active');
                         })
                         .appendTo($list);
@@ -264,6 +263,14 @@
             map.createPane('pubPane');
             map.getPane('pubPane').style.zIndex = 410;            
             
+            const textIcons = {
+                'bar': '🍸',
+                'pub': '🍺',
+                'biergarten': '🍺',
+                'brewery': '🍺',
+                'restaurant': '🍽️'
+            }
+
             function makePubLayer(geojson) {
                 return new L.GeoJSON(geojson, {
                     pointToLayer: function (feature, latlng) {
@@ -273,7 +280,7 @@
                             color: '#000000',
                             weight: 2,
                             fillOpacity: 0.8, 
-                            iconText: '🍺', 
+                            iconText: textIcons[feature.properties.subtype], 
                             pane: 'pubPane' 
                         });
                     },
