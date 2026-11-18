@@ -83,32 +83,10 @@
     <!-- Custom Leaflet Plugins -->
     <script src="https://cdn.jsdelivr.net/gh/sjsafranek/leaflet-custom-plugins@latest/L.tileLayer.osm.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/sjsafranek/leaflet-custom-plugins@latest/L.TextIconCircleMarker.js"></script>
-    
+    <script src="https://cdn.jsdelivr.net/gh/sjsafranek/js-helpers@latest/utils.js"></script>
+
     {{ pubs|json_script:"pubs-json" }}
     <script>
-
-        // Utils
-        function throttle(fn, delay = 300) {
-            let timeoutId = null;
-            return function (...args) {
-                if (timeoutId !== null) return;
-                fn.apply(this, args);
-                timeoutId = setTimeout(() => {
-                    timeoutId = null;
-                }, delay);
-            };
-        }
-
-        function debounce(func, delay = 300) {
-            let timeoutId;
-            return function (...args) {
-                clearTimeout(timeoutId);
-                timeoutId = setTimeout(() => {
-                    func.apply(this, args);
-                }, delay);
-            };
-        }
-
 
         // Formatters
         function formatDistance(m) {
@@ -134,55 +112,6 @@
                 iconAnchor: [15, 15]  // Center point of the icon (half of iconSize)
             });
         }
-
-
-        // /**
-        //  * L.TextIconCircleMarker
-        //  */
-        // // Extend Leaflet's Canvas renderer
-        // L.Canvas.include({
-        //     _updateCircleWithIcon: function (layer) {
-        //         // Draw the standard circle first
-        //         this._updateCircle(layer);
-
-        //         if (!layer.options.iconText && !layer.options.iconImg) return;
-
-        //         const p = layer._point;
-        //         const ctx = this._ctx;
-
-        //         ctx.save();
-        //         if (layer.options.iconImg && layer.options.iconImg.complete) {
-        //             const s = layer.options.iconSize || 16;
-        //             ctx.drawImage(layer.options.iconImg, p.x - s / 2, p.y - s / 2, s, s);
-        //         } else if (layer.options.iconText) {
-        //             ctx.fillStyle = layer.options.iconColor || '#ffffff';
-        //             ctx.font = layer.options.iconFont || 'bold 12px sans-serif';
-        //             ctx.textAlign = 'center';
-        //             ctx.textBaseline = 'middle';
-        //             ctx.fillText(layer.options.iconText, p.x, p.y);
-        //         }
-        //         ctx.restore();
-        //     }
-        // });
-
-        // // Create a custom CircleMarker class
-        // L.TextIconCircleMarker = L.CircleMarker.extend({
-        //     _updatePath: function () {
-        //         this._renderer._updateCircleWithIcon(this);
-        //     }
-        // });
-
-        // /**
-        //  * L.OSMTileLayer
-        //  */
-        // L.OSMTileLayer = function() {
-        //     return L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        //         maxZoom: 19, 
-        //         attribution: "&copy; OpenStreetMap contributors",
-        //         referrerPolicy: 'no-referrer-when-downgrade'
-        //     });
-        // }
-
 
         // Initialize application
         $(function () {
