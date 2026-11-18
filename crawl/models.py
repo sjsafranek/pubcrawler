@@ -83,7 +83,7 @@ class CrawlPub(models.Model):
             deleted_position = self.position
             super().delete(*args, **kwargs)
             # Decrement position for all rows that came after the deleted row
-            CrawlPub.objects.filter(order__gt=deleted_position, crawl=crawl).update(
+            CrawlPub.objects.filter(position__gt=deleted_position, crawl=crawl).update(
                 position=F('position') - 1
             )
 
