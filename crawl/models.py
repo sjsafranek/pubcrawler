@@ -71,7 +71,7 @@ class CrawlPub(models.Model):
         ]
 
     def save(self, *args, **kwargs):
-        if self._state.adding and not self.order:
+        if self._state.adding and not self.position:
             max_position = CrawlPub.objects.aggregate(Max("position"))["position__max"]
             self.position = (max_position or 0) + 1
         super().save(*args, **kwargs)
@@ -81,9 +81,9 @@ class CrawlPub(models.Model):
             crawl = self.crawl
             deleted_position = self.position
             super().delete(*args, **kwargs)
-            # Decrement order for all rows that came after the deleted row
+            # Decrement position for all rows that came after the deleted row
             CrawlPub.objects.filter(order__gt=deleted_position, crawl=crawl).update(
-                order=F('position') - 1
+                position=F('position') - 1
             )
 
     def __str__(self):
