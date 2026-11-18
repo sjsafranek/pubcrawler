@@ -1,4 +1,6 @@
 from django.db import models
+from django.db import transaction
+from django.db.models import F
 from django.urls import reverse
 from django.utils.text import slugify
 
@@ -67,6 +69,22 @@ class CrawlPub(models.Model):
                 name="unique_position_per_crawl"
             )
         ]
+
+    def save(self, *args, **kwargs):
+        if self._state.adding and not self.order:
+            max_position = CrawlPub.objects.aggregate(Max("position"))["position__max"]
+            self.position = (max_position or 0) + 1
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        with transaction.atomic():
+            crawl = self.crawl
+            deleted_position = self.position
+            super().delete(*args, **kwargs)
+            # Decrement order for all rows that came after the deleted row
+            CrawlPub.objects.filter(order__gt=deleted_position, crawl=crawl).update(
+                order=F('position') - 1
+            )
 
     def __str__(self):
         return f'{self.crawl}: {self.position} - {self.pub}'
