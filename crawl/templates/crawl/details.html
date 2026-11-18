@@ -212,11 +212,17 @@
                         .append($("<div>", { class: "small text-body-secondary" })
                         .text([pub.subtype, pub.distance_m != null ? formatDistance(pub.distance_m) : null, pub.address]
                         .filter(Boolean).join(" · ")))
-                        .on("click", function () {
+                        .on("click", function(event) {
                             $list.children(".active").removeClass("active");
                             $(this).addClass("active");
                             map.setView([pub.latitude, pub.longitude], Math.max(map.getZoom(), 16));
                             marker.openPopup();
+                        })
+                        .on("mouseover", function(event) {
+                            console.log(marker);
+                        })
+                        .on("mouseout", function(event) {
+                            console.log(marker);
                         })
                         .appendTo($list);
 
