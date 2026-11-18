@@ -276,9 +276,11 @@
                     pointToLayer: function (feature, latlng) {
                         return new L.TextIconCircleMarker(latlng, {
                             radius: 12,
-                            fillColor: '#d3a10e',
+                            // fillColor: '#d3a10e',
+                            fillColor: '#ffffff'
                             color: '#000000',
-                            weight: 2,
+                            // weight: 2,
+                            weight: 4,
                             fillOpacity: 0.8, 
                             iconText: textIcons[feature.properties.subtype], 
                             pane: 'pubPane' 
