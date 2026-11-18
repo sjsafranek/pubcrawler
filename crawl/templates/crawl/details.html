@@ -82,9 +82,16 @@
     {{ pubs|json_script:"pubs-json" }}
     <script>
 
-
-        function formatDistance(m) {
-            return m < 1000 ? m + " m" : (m / 1000).toFixed(1) + " km";
+        // Utils
+        function throttle(fn, delay = 300) {
+            let timeoutId = null;
+            return function (...args) {
+                if (timeoutId !== null) return;
+                fn.apply(this, args);
+                timeoutId = setTimeout(() => {
+                    timeoutId = null;
+                }, delay);
+            };
         }
 
         function debounce(func, delay = 300) {
@@ -95,6 +102,12 @@
                     func.apply(this, args);
                 }, delay);
             };
+        }
+
+
+        // Formatters
+        function formatDistance(m) {
+            return m < 1000 ? m + " m" : (m / 1000).toFixed(1) + " km";
         }
 
 
@@ -362,15 +375,6 @@
                     });
             }
 
-            // Handle pub layer refreshes
-            // var pubLayerRenderTimeout = null;
-            // map.on('moveend zoomend resize', function(event) {
-            //     if (null !== pubLayerRenderTimeout) return;
-            //     pubLayerRenderTimeout = setTimeout(() => {
-            //         renderPubLayer();
-            //         pubLayerRenderTimeout = null;
-            //     }, 1500);
-            // });
             map.on('moveend zoomend resize', debounce(renderPubLayer, 1500));
 
             renderPubLayer();
