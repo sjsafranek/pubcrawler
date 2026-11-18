@@ -1,6 +1,7 @@
 from django.db import models
 from django.db import transaction
 from django.db.models import F
+from django.db.models import Max
 from django.urls import reverse
 from django.utils.text import slugify
 
