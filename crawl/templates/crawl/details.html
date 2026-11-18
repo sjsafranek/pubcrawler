@@ -54,6 +54,7 @@
     {% endblock %}
 
 {% block content %}
+
     <div class="container-fluid p-0">
         <div class="row g-0">
 
@@ -78,6 +79,9 @@
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Custom Leaflet Plugins -->
+    <script scr="https://cdn.jsdelivr.net/gh/sjsafranek/leaflet-custom-plugins@main/L.tileLayer.osm.js"></script>
     
     {{ pubs|json_script:"pubs-json" }}
     <script>
@@ -168,16 +172,16 @@
         });
 
 
-        /**
-         * L.OSMTileLayer
-         */
-        L.OSMTileLayer = function() {
-            return L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-                maxZoom: 19, 
-                attribution: "&copy; OpenStreetMap contributors",
-                referrerPolicy: 'no-referrer-when-downgrade'
-            });
-        }
+        // /**
+        //  * L.OSMTileLayer
+        //  */
+        // L.OSMTileLayer = function() {
+        //     return L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        //         maxZoom: 19, 
+        //         attribution: "&copy; OpenStreetMap contributors",
+        //         referrerPolicy: 'no-referrer-when-downgrade'
+        //     });
+        // }
 
 
         // Initialize application
@@ -195,7 +199,7 @@
                 preferCanvas: true
             }).setView([20, 0], 2);
             
-            L.OSMTileLayer().addTo(map);
+            L.tileLayer.osm().addTo(map);
             
             map.createPane('crawlPane');
             map.getPane('crawlPane').style.zIndex = 420;
@@ -385,5 +389,6 @@
 
     });
   </script>
+
 {% endblock %}
 
