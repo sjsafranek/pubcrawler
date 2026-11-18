@@ -227,30 +227,13 @@
                             {% endif %}
                         }
                     });
-            });
+                });
 
-            if (pubs.length) map.fitBounds(L.latLngBounds($.map(pubs, pub => [[pub.latitude, pub.longitude]])).pad(0.1));
-            if (allPubs.length) setStatus(`${pubs.length} of ${allPubs.length} pubs ${label}`);
+                if (pubs.length) map.fitBounds(L.latLngBounds($.map(pubs, pub => [[pub.latitude, pub.longitude]])).pad(0.1));
+                if (allPubs.length) setStatus(`${pubs.length} of ${allPubs.length} pubs ${label}`);
+            }
 
-
-            // // Draw walking path
-            // let pathLayer;
-            // let coordinates = allPubs.map(d => `${d.longitude},${d.latitude}`).join(';');
-            // let radiuses = allPubs.map(d => `25`).join(';');
-            // $.getJSON(`http://router.project-osrm.org/route/v1/foot/${coordinates}?overview=simplified&geometries=geojson`)
-            //     .done(data => {
-            //         console.log(data);
-            //         pathLayer && pathLayer.remove();
-            //         pathLayer = new L.GeoJSON(data.routes[0].geometry, {
-            //             style: {
-            //                 color: '#ff5722',
-            //                 weight: 4,
-            //                 opacity: 0.9,
-            //                 className: 'marching-ants-line' 
-            //             }
-            //         });
-            //         pathLayer.addTo(map);
-            //     });
+            render();
 
 
             /** 
@@ -311,12 +294,29 @@
 
             renderPubLayer();
 
-        }
 
-        render();
+            // // Draw walking path
+            // let pathLayer;
+            // let coordinates = allPubs.map(d => `${d.longitude},${d.latitude}`).join(';');
+            // let radiuses = allPubs.map(d => `25`).join(';');
+            // $.getJSON(`http://router.project-osrm.org/route/v1/foot/${coordinates}?overview=simplified&geometries=geojson`)
+            //     .done(data => {
+            //         console.log(data);
+            //         pathLayer && pathLayer.remove();
+            //         pathLayer = new L.GeoJSON(data.routes[0].geometry, {
+            //             style: {
+            //                 color: '#ff5722',
+            //                 weight: 4,
+            //                 opacity: 0.9,
+            //                 className: 'marching-ants-line' 
+            //             }
+            //         });
+            //         pathLayer.addTo(map);
+            //     });
 
-    });
-  </script>
+        });
+
+    </script>
 
 {% endblock %}
 
