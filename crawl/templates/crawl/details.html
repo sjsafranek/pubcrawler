@@ -286,7 +286,8 @@
                                     console.log('Coordinates:', e.latlng);
                                     $.getJSON(`/api/v1/crawl/${crawl_id}/pub/${feature.properties.id}/add`)
                                         .done(response => { 
-                                            console.log(response); 
+                                            allPubs.push(response.data.pub);
+                                            render();
                                         });
                                     {% else %}
                                     {% endif %}

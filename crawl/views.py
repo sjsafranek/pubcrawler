@@ -98,7 +98,7 @@ def toggle_crawl_pub(request, crawl_id, pub_id, action):
         position = CrawlPub.objects.filter(crawl=crawl).count()
         stop = CrawlPub(crawl=crawl, pub=pub, completed=False, position=position+1)
         stop.save()
-        api_response = buildSuccessResponse()
+        api_response = buildSuccessResponse(pub={**model_to_dict(stop.pub), **{'completed': stop.completed, 'position': stop.position}})
         return JsonResponse(api_response)
     
     # TODO
