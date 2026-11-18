@@ -267,7 +267,7 @@
             map.createPane('pubPane');
             map.getPane('pubPane').style.zIndex = 410;            
             
-            let pubLayer;
+            var pubLayer = null;
             function renderPubLayer() {
                 let bounds = L.rectangle(map.getBounds()).toGeoJSON();
                 let geom = encodeURIComponent(JSON.stringify(bounds));
@@ -319,7 +319,7 @@
                     });
             }
 
-            let pubLayerRenderTimeout = null;
+            var pubLayerRenderTimeout = null;
             map.on('moveend zoomend resize', function(event) {
                 if (null !== pubLayerRenderTimeout) return;
                 // clearTimeout(pubLayerRenderTimeout);
