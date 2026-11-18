@@ -237,7 +237,6 @@
                                     allPubs = allPubs.filter(d => d.id != pub.id);
                                     render();
                                 });
-                            {% else %}
                             {% endif %}
                         }
                     });
@@ -311,7 +310,6 @@
                                                 allPubs.push(response.data.pub);
                                                 render();
                                             });
-                                        {% else %}
                                         {% endif %}
                                     }
                                 });
