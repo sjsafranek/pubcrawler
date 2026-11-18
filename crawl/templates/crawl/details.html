@@ -276,29 +276,29 @@
                                     layer.bindPopup(feature.properties.name);
                                 }
 
-                                // 2. Open on hover, close on leave
-                                layer.on('mouseover', function (e) {
-                                    layer.openPopup();
-                                });
+                                layer.on({
+                                    'mouseover': function (e) {
+                                        layer.openPopup();
+                                    },
+                                    'mouseout': function (e) {
+                                        layer.closePopup();
+                                    },
+                                    'dblclick': function (e) {
+                                        L.DomEvent.stopPropagation(e);
 
-                                layer.on('mouseout', function (e) {
-                                    layer.closePopup();
-                                });
+                                        {% if user.is_authenticated %}
+                                        // Add pub to crawl
+                                        let crawl_id = {{ crawl.id }};
+                                        $.getJSON(`/api/v1/crawl/${crawl_id}/pub/${feature.properties.id}/add`)
+                                            .done(response => { 
+                                                allPubs.push(response.data.pub);
+                                                render();
+                                            });
+                                        {% else %}
+                                        {% endif %}
+                                    }
+                                );
 
-                                layer.on('dblclick', function (e) {
-                                    L.DomEvent.stopPropagation(e);
-
-                                    {% if user.is_authenticated %}
-                                    // Add pub to crawl
-                                    let crawl_id = {{ crawl.id }};
-                                    $.getJSON(`/api/v1/crawl/${crawl_id}/pub/${feature.properties.id}/add`)
-                                        .done(response => { 
-                                            allPubs.push(response.data.pub);
-                                            render();
-                                        });
-                                    {% else %}
-                                    {% endif %}
-                                });
                             }
                         });
                         pubLayer.addTo(map);
