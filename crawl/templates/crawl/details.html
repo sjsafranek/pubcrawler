@@ -81,7 +81,8 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
     <!-- Custom Leaflet Plugins -->
-    <script src="https://cdn.jsdelivr.net/gh/sjsafranek/leaflet-custom-plugins@main/L.tileLayer.osm.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/sjsafranek/leaflet-custom-plugins@latest/L.tileLayer.osm.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/sjsafranek/leaflet-custom-plugins@latest/L.TextIconCircleMarker.js"></script>
     
     {{ pubs|json_script:"pubs-json" }}
     <script>
@@ -135,42 +136,41 @@
         }
 
 
-        /**
-         * L.TextIconCircleMarker
-         */
-        // Extend Leaflet's Canvas renderer
-        L.Canvas.include({
-            _updateCircleWithIcon: function (layer) {
-                // Draw the standard circle first
-                this._updateCircle(layer);
+        // /**
+        //  * L.TextIconCircleMarker
+        //  */
+        // // Extend Leaflet's Canvas renderer
+        // L.Canvas.include({
+        //     _updateCircleWithIcon: function (layer) {
+        //         // Draw the standard circle first
+        //         this._updateCircle(layer);
 
-                if (!layer.options.iconText && !layer.options.iconImg) return;
+        //         if (!layer.options.iconText && !layer.options.iconImg) return;
 
-                const p = layer._point;
-                const ctx = this._ctx;
+        //         const p = layer._point;
+        //         const ctx = this._ctx;
 
-                ctx.save();
-                if (layer.options.iconImg && layer.options.iconImg.complete) {
-                    const s = layer.options.iconSize || 16;
-                    ctx.drawImage(layer.options.iconImg, p.x - s / 2, p.y - s / 2, s, s);
-                } else if (layer.options.iconText) {
-                    ctx.fillStyle = layer.options.iconColor || '#ffffff';
-                    ctx.font = layer.options.iconFont || 'bold 12px sans-serif';
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    ctx.fillText(layer.options.iconText, p.x, p.y);
-                }
-                ctx.restore();
-            }
-        });
+        //         ctx.save();
+        //         if (layer.options.iconImg && layer.options.iconImg.complete) {
+        //             const s = layer.options.iconSize || 16;
+        //             ctx.drawImage(layer.options.iconImg, p.x - s / 2, p.y - s / 2, s, s);
+        //         } else if (layer.options.iconText) {
+        //             ctx.fillStyle = layer.options.iconColor || '#ffffff';
+        //             ctx.font = layer.options.iconFont || 'bold 12px sans-serif';
+        //             ctx.textAlign = 'center';
+        //             ctx.textBaseline = 'middle';
+        //             ctx.fillText(layer.options.iconText, p.x, p.y);
+        //         }
+        //         ctx.restore();
+        //     }
+        // });
 
-        // Create a custom CircleMarker class
-        L.TextIconCircleMarker = L.CircleMarker.extend({
-            _updatePath: function () {
-                this._renderer._updateCircleWithIcon(this);
-            }
-        });
-
+        // // Create a custom CircleMarker class
+        // L.TextIconCircleMarker = L.CircleMarker.extend({
+        //     _updatePath: function () {
+        //         this._renderer._updateCircleWithIcon(this);
+        //     }
+        // });
 
         // /**
         //  * L.OSMTileLayer
