@@ -87,6 +87,16 @@
             return m < 1000 ? m + " m" : (m / 1000).toFixed(1) + " km";
         }
 
+        function debounce(func, delay = 300) {
+            let timeoutId;
+            return function (...args) {
+                clearTimeout(timeoutId);
+                timeoutId = setTimeout(() => {
+                    func.apply(this, args);
+                }, delay);
+            };
+        }
+
 
         // Helper function to generate a numbered circle icon
         function createPubPendingIcon(number) {
@@ -107,6 +117,10 @@
             });
         }
 
+
+        /**
+         * L.TextIconCircleMarker
+         */
         // Extend Leaflet's Canvas renderer
         L.Canvas.include({
             _updateCircleWithIcon: function (layer) {
@@ -140,6 +154,19 @@
             }
         });
 
+
+        /**
+         * L.OSMTileLayer
+         */
+        L.OSMTileLayer = function() {
+            return L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+                maxZoom: 19, 
+                attribution: "&copy; OpenStreetMap contributors",
+                referrerPolicy: 'no-referrer-when-downgrade'
+            });
+        }
+
+
         // Initialize application
         $(function () {
 
@@ -155,11 +182,7 @@
                 preferCanvas: true
             }).setView([20, 0], 2);
             
-            L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-                maxZoom: 19, 
-                attribution: "&copy; OpenStreetMap contributors",
-                referrerPolicy: 'no-referrer-when-downgrade'
-            }).addTo(map);
+            L.OSMTileLayer().addTo(map);
             
             map.createPane('crawlPane');
             map.getPane('crawlPane').style.zIndex = 420;
@@ -179,24 +202,25 @@
 
             // Built with jQuery's .text() so venue data is never interpreted as HTML
             function popupContent(pub) {
-                const $p = $("<div>").append(
+                const $container = $("<div>").append(
                     $("<strong>").text(pub.name),
                     $("<br>"),
                     document.createTextNode(pub.subtype)
                 );
                 
-                const addLine = text => $p.append($("<br>"), document.createTextNode(text));
+                const addLine = text => $container.append($("<br>"), document.createTextNode(text));
                 if (pub.address_street_number && pub.address_street_name) addLine(`${pub.address_street_number} ${pub.address_street_name}`);
                 if (pub.hours) addLine("Hours: " + pub.hours);
                 if (pub.phone) addLine(pub.phone);
                 if (pub.website && /^https?:\/\//.test(pub.website)) {
-                    $p.append(
+                    $container.append(
                         $("<br>"),
                         $("<a>", { href: pub.website, target: "_blank", rel: "noopener" }).text("Website")
                     );
                 }
-                return $p[0];
+                return $container[0];
             }
+
 
             {% if user.is_authenticated %}
             /** 
@@ -220,6 +244,7 @@
                 }
             }
             {% endif %}
+
 
             function render() {
                 const type = $type.val(), q = $.trim($name.val()).toLowerCase();
@@ -262,6 +287,7 @@
             if (pubs.length) map.fitBounds(L.latLngBounds($.map(pubs, pub => [[pub.latitude, pub.longitude]])).pad(0.1));
             if (allPubs.length) setStatus(`${pubs.length} of ${allPubs.length} pubs ${label}`);
 
+
             // // Draw walking path
             // let pathLayer;
             // let coordinates = allPubs.map(d => `${d.longitude},${d.latitude}`).join(';');
@@ -282,10 +308,48 @@
             //     });
 
 
+            /** 
+             * PubLayer
+             */
             // Show nearby Pubs             
             map.createPane('pubPane');
             map.getPane('pubPane').style.zIndex = 410;            
             
+            function makePubLayer(geojson) {
+                return new L.GeoJSON(geojson, {
+                    pointToLayer: function (feature, latlng) {
+                        return new L.TextIconCircleMarker(latlng, {
+                            radius: 12,
+                            fillColor: '#d3a10e',
+                            color: '#000000',
+                            weight: 2,
+                            fillOpacity: 0.8, 
+                            iconText: '🍺', 
+                            pane: 'pubPane' 
+                        });
+                    },
+                    onEachFeature: function (feature, layer) {
+                        if (feature.properties && feature.properties.name) {
+                            layer.bindPopup(feature.properties.name);
+                        }
+                        layer.on({
+                            'mouseover': function (e) {
+                                layer.openPopup();
+                            },
+                            'mouseout': function (e) {
+                                layer.closePopup();
+                            },
+                            'dblclick': function (e) {
+                                L.DomEvent.stopPropagation(e);
+                                {% if user.is_authenticated %}
+                                AdminAPI.add(feature.properties.id);
+                                {% endif %}
+                            }
+                        });
+                    }
+                });
+            }
+
             var pubLayer = null;
             function renderPubLayer() {
                 let bounds = L.rectangle(map.getBounds()).toGeoJSON();
@@ -293,55 +357,24 @@
                 $.getJSON(`/api/v1/pubs/search?geom=${geom}`)
                     .done(data => {
                         pubLayer && pubLayer.remove();
-                        pubLayer = new L.GeoJSON(data.data.layer, {
-                            pointToLayer: function (feature, latlng) {
-                                return new L.TextIconCircleMarker(latlng, {
-                                    radius: 12,
-                                    fillColor: '#d3a10e',
-                                    color: '#000000',
-                                    weight: 2,
-                                    fillOpacity: 0.8, 
-                                    iconText: '🍺', 
-                                    pane: 'pubPane' 
-                                });
-                            },
-                            onEachFeature: function (feature, layer) {
-                                if (feature.properties && feature.properties.name) {
-                                    layer.bindPopup(feature.properties.name);
-                                }
-
-                                layer.on({
-                                    'mouseover': function (e) {
-                                        layer.openPopup();
-                                    },
-                                    'mouseout': function (e) {
-                                        layer.closePopup();
-                                    },
-                                    'dblclick': function (e) {
-                                        L.DomEvent.stopPropagation(e);
-                                        {% if user.is_authenticated %}
-                                        AdminAPI.add(feature.properties.id);
-                                        {% endif %}
-                                    }
-                                });
-
-                            }
-                        });
+                        pubLayer = makePubLayer(data.data.layer);
                         pubLayer.addTo(map);
                     });
             }
 
             // Handle pub layer refreshes
-            var pubLayerRenderTimeout = null;
-            map.on('moveend zoomend resize', function(event) {
-                if (null !== pubLayerRenderTimeout) return;
-                pubLayerRenderTimeout = setTimeout(() => {
-                    renderPubLayer();
-                    pubLayerRenderTimeout = null;
-                }, 1500);
-            });
+            // var pubLayerRenderTimeout = null;
+            // map.on('moveend zoomend resize', function(event) {
+            //     if (null !== pubLayerRenderTimeout) return;
+            //     pubLayerRenderTimeout = setTimeout(() => {
+            //         renderPubLayer();
+            //         pubLayerRenderTimeout = null;
+            //     }, 1500);
+            // });
+            map.on('moveend zoomend resize', debounce(renderPubLayer, 1500));
 
             renderPubLayer();
+
         }
 
         render();
