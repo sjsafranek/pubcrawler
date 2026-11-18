@@ -36,6 +36,10 @@
                 background-color: #838383;
             }
 
+            .marker-pub-active {
+                border: 4px solid #ffffff;
+            }
+
             /* Map Path */
             .marching-ants-line {
                 /* Defines the dash length and gap length */
@@ -220,9 +224,11 @@
                         })
                         .on("mouseover", function(event) {
                             console.log(marker);
+                            marker._icon.classList.add('marker-pub-active');
                         })
                         .on("mouseout", function(event) {
                             console.log(marker);
+                            marker._icon.classList.remove('marker-pub-active');
                         })
                         .appendTo($list);
 
