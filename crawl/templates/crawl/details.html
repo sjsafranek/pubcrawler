@@ -82,6 +82,12 @@
     {{ pubs|json_script:"pubs-json" }}
     <script>
 
+
+        function formatDistance(m) {
+            return m < 1000 ? m + " m" : (m / 1000).toFixed(1) + " km";
+        }
+
+
         // Helper function to generate a numbered circle icon
         function createPubPendingIcon(number) {
             return L.divIcon({
@@ -134,7 +140,6 @@
             }
         });
 
-
         // Initialize application
         $(function () {
 
@@ -166,10 +171,6 @@
                   $name = $("#name");
             let label = "";
 
-            function formatDistance(m) {
-                return m < 1000 ? m + " m" : (m / 1000).toFixed(1) + " km";
-            }
-
             function setStatus(text, isError = false) {
                 $status.text(text)
                     .toggleClass("text-danger", isError)
@@ -196,6 +197,29 @@
                 }
                 return $p[0];
             }
+
+            {% if user.is_authenticated %}
+            /** 
+             * AdminAPI
+             */
+            let crawl_id = {{ crawl.id }};
+            const AdminAPI = {
+                add: function(pub_id) {
+                    $.getJSON(`/api/v1/crawl/${crawl_id}/pub/${pub_id}/add`)
+                        .done(response => { 
+                            allPubs.push(response.data.pub);
+                            render();
+                        });
+                },
+                remove: function(pub_id) {
+                    $.getJSON(`/api/v1/crawl/${crawl_id}/pub/${pub_id}/remove`)
+                        .done(response => { 
+                            allPubs = allPubs.filter(d => d.id != pub_id);
+                            render();
+                        });
+                }
+            }
+            {% endif %}
 
             function render() {
                 const type = $type.val(), q = $.trim($name.val()).toLowerCase();
@@ -229,13 +253,7 @@
                         'dblclick': function (e) {
                             L.DomEvent.stopPropagation(e);
                             {% if user.is_authenticated %}
-                            // Remove pub to crawl
-                            let crawl_id = {{ crawl.id }};
-                            $.getJSON(`/api/v1/crawl/${crawl_id}/pub/${pub.id}/remove`)
-                                .done(response => { 
-                                    allPubs = allPubs.filter(d => d.id != pub.id);
-                                    render();
-                                });
+                            AdminAPI.remove(pub.id);
                             {% endif %}
                         }
                     });
@@ -263,6 +281,7 @@
             //         pathLayer.addTo(map);
             //     });
 
+
             // Show nearby Pubs             
             map.createPane('pubPane');
             map.getPane('pubPane').style.zIndex = 410;            
@@ -273,7 +292,6 @@
                 let geom = encodeURIComponent(JSON.stringify(bounds));
                 $.getJSON(`/api/v1/pubs/search?geom=${geom}`)
                     .done(data => {
-                        // let icon = createPubIcon();
                         pubLayer && pubLayer.remove();
                         pubLayer = new L.GeoJSON(data.data.layer, {
                             pointToLayer: function (feature, latlng) {
@@ -302,13 +320,7 @@
                                     'dblclick': function (e) {
                                         L.DomEvent.stopPropagation(e);
                                         {% if user.is_authenticated %}
-                                        // Add pub to crawl
-                                        let crawl_id = {{ crawl.id }};
-                                        $.getJSON(`/api/v1/crawl/${crawl_id}/pub/${feature.properties.id}/add`)
-                                            .done(response => { 
-                                                allPubs.push(response.data.pub);
-                                                render();
-                                            });
+                                        AdminAPI.add(feature.properties.id);
                                         {% endif %}
                                     }
                                 });
@@ -319,10 +331,10 @@
                     });
             }
 
+            // Handle pub layer refreshes
             var pubLayerRenderTimeout = null;
             map.on('moveend zoomend resize', function(event) {
                 if (null !== pubLayerRenderTimeout) return;
-                // clearTimeout(pubLayerRenderTimeout);
                 pubLayerRenderTimeout = setTimeout(() => {
                     renderPubLayer();
                     pubLayerRenderTimeout = null;
