@@ -157,11 +157,11 @@ LOGGING = {
             'level': 'DEBUG',
             'propagate': False,
         },
-        "django.request": {
-            "handlers": ["console"],
-            "level": "DEBUG",
-            "propagate": False,
-        },        
+        # "django.request": {
+        #     "handlers": ["console"],
+        #     "level": "DEBUG",
+        #     "propagate": False,
+        # },
         'pubcrawler': {
             'handlers': ['console'],
             'level': 'DEBUG',
