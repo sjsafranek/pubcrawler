@@ -89,7 +89,9 @@ def get_crawl_pubs(request, crawl_id):
 def toggle_crawl_pub(request, crawl_id, pub_id, action):
     if not request.user.is_authenticated:
         api_response = buildMethodNotAllowedResponse()
-        return JsonResponse(api_response) 
+        return JsonResponse(api_response)
+
+    # TODO :: Check user permissions
     
     crawl = get_object_or_404(Crawl, id=crawl_id)
     pub = get_object_or_404(Pub, id=pub_id)
@@ -121,6 +123,12 @@ def toggle_crawl_pub(request, crawl_id, pub_id, action):
 
 
 def import_pubs(request):
+    if not request.user.is_authenticated:
+        api_response = buildMethodNotAllowedResponse()
+        return JsonResponse(api_response)
+
+    # TODO :: Check user permissions
+        
     longitude = float(request.GET.get("longitude"))
     latitude = float(request.GET.get("latitude"))
     radius = int(request.GET.get("radius", 5000))    # meters
