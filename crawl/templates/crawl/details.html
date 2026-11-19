@@ -115,6 +115,23 @@
             });
         }
 
+
+        L.helpers = L.helpers || {};
+        L.helpers.getLayerGroupBounds = function(layerGroup) {
+            const bounds = L.latLngBounds([]);
+            layerGroup.eachLayer((layer) => {
+                if (layer.getBounds) {
+                    // Handles polygons, polylines, rectangles, circles, and nested FeatureGroups
+                    bounds.extend(layer.getBounds());
+                } else if (layer.getLatLng) {
+                    // Handles markers and circleMarkers
+                    bounds.extend(layer.getLatLng());
+                }
+            });
+            return bounds;
+        }
+
+
         class App {
             constructor() {
                 this.map = L.map("map", {
@@ -322,7 +339,7 @@
                 if (2 == app.getMap().getZoom()) {   // check for starting zoom level
                     if (allPubs.length) {
                         // app.getMap().fitBounds(L.latLngBounds($.map(allPubs, pub => [[pub.latitude, pub.longitude]])).pad(0.1));
-                        app.getMap().fitBounds(crawlLayer.getBounds().pad(0.1));
+                        app.getMap().fitBounds(L.helpers.getLayerGroupBounds(crawlLayer).pad(0.1));
                     }
                 }
 
