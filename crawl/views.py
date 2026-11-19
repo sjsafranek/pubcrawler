@@ -1,6 +1,7 @@
 import json
 import logging
 
+from django.db.models import Q
 from django.shortcuts import render
 from django.shortcuts import get_object_or_404
 from django.forms.models import model_to_dict
@@ -161,7 +162,7 @@ def search_pubs(request):
 
     # Load pubs from within bounding box
     df = pd.DataFrame([
-        model_to_dict(pub) for pub in Pub.objects.filter(longitude__range=(minx, maxx)).filter(latitude__range=(miny, maxy))
+        model_to_dict(pub) for pub in Pub.objects.filter(Q(longitude__range=(minx, maxx)) & Q(latitude__range=(miny, maxy)))
     ])
     gdf = makeGeoDataFrameFromDataFrame(df)
 
@@ -170,7 +171,7 @@ def search_pubs(request):
     # Filter pubs against geometry
     within_gdf = gpd.sjoin(gdf, area, how="inner", predicate="within")
 
-    logger.debug(f"{len(within_gdf)} pubs found within '{geom}'")
+    # logger.debug(f"{len(within_gdf)} pubs found within '{geom}'")
 
     # Convert to GeoJson
     geojson_str = within_gdf.to_json(to_wgs84=True, na="drop")
