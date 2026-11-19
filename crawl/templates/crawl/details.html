@@ -150,8 +150,6 @@
         // Initialize application
         $(function () {
 
-           
-
 
             // Parse the JSON data safely in JavaScript
             var allPubs = JSON.parse(document.getElementById('pubs-json').textContent);
@@ -162,15 +160,6 @@
 
 
             const app = new App();
-
-            // const $status = $("#status"), 
-            //       $list = $("#list");
-
-            // function setStatus(text, isError = false) {
-            //     $status.text(text)
-            //         .toggleClass("text-danger", isError)
-            //         .toggleClass("text-body-secondary", !isError);
-            // }
 
             // Built with jQuery's .text() so venue data is never interpreted as HTML
             function popupContent(pub) {
@@ -332,7 +321,8 @@
                 // Set map view
                 if (2 == app.getMap().getZoom()) {   // check for starting zoom level
                     if (allPubs.length) {
-                        app.getMap().fitBounds(L.latLngBounds($.map(allPubs, pub => [[pub.latitude, pub.longitude]])).pad(0.1));
+                        // app.getMap().fitBounds(L.latLngBounds($.map(allPubs, pub => [[pub.latitude, pub.longitude]])).pad(0.1));
+                        app.getMap().fitBounds(crawlLayer.getBounds().pad(0.1));
                     }
                 }
 
