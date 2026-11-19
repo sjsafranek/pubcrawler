@@ -162,7 +162,7 @@
                 }
                 if (pub.phone) {
                     let cleaned = pub.phone.replaceAll('-');
-                    addLine(`<a href="tel:+${cleaned}">📞 ${pub.phone}</a>`);
+                    addLine(`🕿 <a href="tel:+${cleaned}">${pub.phone}</a>`);
                 }
                 if (pub.website && /^https?:\/\//.test(pub.website)) {
                     $container.append(
