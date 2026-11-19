@@ -170,6 +170,8 @@ def search_pubs(request):
     # Filter pubs against geometry
     within_gdf = gpd.sjoin(gdf, area, how="inner", predicate="within")
 
+    logger.debug(f"{len(within_gdf)} pubs found within '{geom}'")
+
     # Convert to GeoJson
     geojson_str = within_gdf.to_json(to_wgs84=True, na="drop")
 
