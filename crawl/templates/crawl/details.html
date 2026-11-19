@@ -219,11 +219,11 @@
                 // Attach event listeners
                 marker.on({
                     'mouseover': function (e) {
-                        marker.openPopup();
+                        // marker.openPopup();
                         marker._icon.classList.add('marker-pub-active');
                     },
                     'mouseout': function (e) {
-                        marker.closePopup();
+                        // marker.closePopup();
                         marker._icon.classList.remove('marker-pub-active');
                     },
                     'dblclick': function (e) {
@@ -323,10 +323,10 @@
                         }
                         layer.on({
                             'mouseover': function (e) {
-                                layer.openPopup();
+                                // layer.openPopup();
                             },
                             'mouseout': function (e) {
-                                layer.closePopup();
+                                // layer.closePopup();
                             },
                             'dblclick': function (e) {
                                 L.DomEvent.stopPropagation(e);
