@@ -19,7 +19,10 @@ class Crawl(TimeStampedModel):
     name = models.CharField(max_length=256, unique=True)
     slug = models.SlugField(max_length=255, unique=True, blank=True)
     description = models.TextField(blank=True, null=True)
-    area = models.JSONField(blank=True, null=True, help_text="Stores GeoJSON of crawl area") # stores geojson
+    area = models.JSONField(blank=True, null=True, help_text="Stores GeoJSON of crawl area")
+    # latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    # longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    # radius = models.PositiveIntegerField(default=1000, help_text="Radius from latitude,longitude in meters")
 
     def __str__(self):
         return self.name
@@ -35,7 +38,7 @@ class Crawl(TimeStampedModel):
 
 class Pub(TimeStampedModel):
     name = models.CharField(max_length=256)
-    external_id = models.CharField(max_length=256, unique=True, null=True, blank=True)
+    osm_id = models.CharField(max_length=256, unique=True, null=True, blank=True)
     subtype = models.CharField(max_length=56)
     hours = models.CharField(max_length=126, null=True, blank=True)
     website = models.CharField(max_length=256, null=True, blank=True)

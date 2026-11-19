@@ -123,3 +123,24 @@ def fetch_bars_nearby(lat: float, lon: float, radius: float) -> dict:
     _nearby_cache[key] = result
     return result
 
+
+
+def fetch_bars_from_area(geojson) -> dict:
+
+    geojson_str = json.dumps(geojson)
+
+    # 1. Load the GeoJSON file and ensure it uses WGS84 (EPSG:4326)
+    boundary_gdf = gpd.read_file(geojson_str).to_crs("EPSG:4326")
+
+    # 2. Extract the Shapely Polygon/MultiPolygon
+    # Use .union_all() (or .unary_union in older GeoPandas) if the GeoJSON has multiple features
+    polygon = boundary_gdf.geometry.union_all()
+
+    # 3. Download OSM features (e.g., all buildings and parks) inside the polygon
+    features_gdf = ox.features_from_polygon(polygon, tags=AMENITY_TAGS)
+
+    # Format results
+    bars = sorted(gdf_to_bars(gdf), key=lambda b: b["name"].lower())
+    result = {"area": geojson_str, "count": len(bars), "bars": bars}
+    return bars
+

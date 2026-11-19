@@ -54,7 +54,7 @@ def buildMissingParameterResponse(parameter_name):
 
 
 def home(request):
-    return HttpResponse("Welcome to the homepage!")
+    return HttpResponse("Welcome to the PubCrawler!")
 
 
 def view_crawl_page(request, slug):
