@@ -135,6 +135,10 @@
                 return this.map;
             }
 
+            getList() {
+                return this.elements.$list;
+            }
+
             setStatus(text, isError = false) {
                 this.elements.$status.text(text)
                     .toggleClass("text-danger", isError)
@@ -286,7 +290,7 @@
                 // Reset ui elements and map layers
                 app.setStatus(`Loading...`);
                 crawlLayer.clearLayers();
-                $list.empty();
+                app.getList().empty();
 
                 // Loop through pubs
                 $.each(allPubs, (i, pub) => {
@@ -301,7 +305,7 @@
                         .text([pub.subtype, pub.distance_m != null ? formatDistance(pub.distance_m) : null, pub.address]
                         .filter(Boolean).join(" · ")))
                         .on("click", function(event) {
-                            $list.children(".active").removeClass("active");
+                            app.getList().children(".active").removeClass("active");
                             $(this).addClass("active");
                             app.getMap().setView([pub.latitude, pub.longitude], Math.max(app.getMap().getZoom(), 16));
                             marker.openPopup();
@@ -321,7 +325,7 @@
                             }
                             {% endif %}
                         })
-                        .appendTo($list);
+                        .appendTo(app.getList());
 
                 });
 
