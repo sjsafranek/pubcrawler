@@ -117,9 +117,6 @@
 
         // Initialize application
         $(function () {
-
-            let first = true;
-
             // Parse the JSON data safely in JavaScript
             var allPubs = JSON.parse(document.getElementById('pubs-json').textContent);
             console.log(allPubs);
@@ -301,9 +298,10 @@
                 });
 
                 // Set map view
-                if (first) {
-                    if (allPubs.length) map.fitBounds(L.latLngBounds($.map(allPubs, pub => [[pub.latitude, pub.longitude]])).pad(0.1));
-                    first = false;
+                if (2 == map.getZoom()) {
+                    if (allPubs.length) {
+                        map.fitBounds(L.latLngBounds($.map(allPubs, pub => [[pub.latitude, pub.longitude]])).pad(0.1));
+                    }
                 }
 
                 // Update ui elements
