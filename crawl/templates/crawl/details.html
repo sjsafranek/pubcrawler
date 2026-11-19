@@ -115,8 +115,40 @@
             });
         }
 
+        class App {
+            constructor() {
+                this.map = L.map("map", {
+                    doubleClickZoom: false, 
+                    preferCanvas: true
+                });
+                this.map.setView([20, 0], 2);
+
+                L.tileLayer.osm().addTo(this.map);
+
+                this.elements = {
+                    $status: $("#status"), 
+                    $list: $("#list")
+                }
+            }
+
+            getMap() {
+                return this.map;
+            }
+
+            setStatus(text, isError = false) {
+                this.elements.$status.text(text)
+                    .toggleClass("text-danger", isError)
+                    .toggleClass("text-body-secondary", !isError);
+            }
+        }
+
+
         // Initialize application
         $(function () {
+
+           
+
+
             // Parse the JSON data safely in JavaScript
             var allPubs = JSON.parse(document.getElementById('pubs-json').textContent);
             console.log(allPubs);
@@ -124,21 +156,17 @@
             // Full-height two-pane layout on large screens only
             if (window.matchMedia("(min-width: 992px)").matches) $(".row").first().addClass("vh-100");
 
-            const map = L.map("map", {
-                doubleClickZoom: false, 
-                preferCanvas: true
-            }).setView([20, 0], 2);
-            
-            L.tileLayer.osm().addTo(map);
 
-            const $status = $("#status"), 
-                  $list = $("#list");
+            const app = new App();
 
-            function setStatus(text, isError = false) {
-                $status.text(text)
-                    .toggleClass("text-danger", isError)
-                    .toggleClass("text-body-secondary", !isError);
-            }
+            // const $status = $("#status"), 
+            //       $list = $("#list");
+
+            // function setStatus(text, isError = false) {
+            //     $status.text(text)
+            //         .toggleClass("text-danger", isError)
+            //         .toggleClass("text-body-secondary", !isError);
+            // }
 
             // Built with jQuery's .text() so venue data is never interpreted as HTML
             function popupContent(pub) {
@@ -216,9 +244,9 @@
             /**
              * CrawlLayer
              */
-            map.createPane('crawlPane');
-            map.getPane('crawlPane').style.zIndex = 420;
-            const crawlLayer = L.layerGroup().addTo(map);
+            app.getMap().createPane('crawlPane');
+            app.getMap().getPane('crawlPane').style.zIndex = 420;
+            const crawlLayer = L.layerGroup().addTo(app.map);
 
             function makeCrawlPubMarker(i, pub) {
                 let icon = !pub.completed ? createPubPendingIcon(i+1) : createPubCompletedIcon(i+1)
@@ -275,7 +303,7 @@
                         .on("click", function(event) {
                             $list.children(".active").removeClass("active");
                             $(this).addClass("active");
-                            map.setView([pub.latitude, pub.longitude], Math.max(map.getZoom(), 16));
+                            app.getMap().setView([pub.latitude, pub.longitude], Math.max(app.getMap().getZoom(), 16));
                             marker.openPopup();
                         })
                         .on("mouseover", function(event) {
@@ -298,9 +326,9 @@
                 });
 
                 // Set map view
-                if (2 == map.getZoom()) {   // check for starting zoom level
+                if (2 == app.getMap().getZoom()) {   // check for starting zoom level
                     if (allPubs.length) {
-                        map.fitBounds(L.latLngBounds($.map(allPubs, pub => [[pub.latitude, pub.longitude]])).pad(0.1));
+                        app.getMap().fitBounds(L.latLngBounds($.map(allPubs, pub => [[pub.latitude, pub.longitude]])).pad(0.1));
                     }
                 }
 
@@ -315,8 +343,8 @@
              * PubLayer
              */
             // Show nearby Pubs             
-            map.createPane('pubPane');
-            map.getPane('pubPane').style.zIndex = 410;            
+            app.getMap().createPane('pubPane');
+            app.getMap().getPane('pubPane').style.zIndex = 410;            
             
             const textIcons = {
                 'bar': '🍸',
@@ -369,17 +397,17 @@
 
             var pubLayer = null;
             function renderPubLayer() {
-                let bounds = L.rectangle(map.getBounds()).toGeoJSON();
+                let bounds = L.rectangle(app.getMap().getBounds()).toGeoJSON();
                 let geom = encodeURIComponent(JSON.stringify(bounds));
                 $.getJSON(`/api/v1/pubs/search?geom=${geom}`)
                     .done(data => {
                         pubLayer && pubLayer.remove();
                         pubLayer = makePubLayer(data.data.layer);
-                        pubLayer.addTo(map);
+                        pubLayer.addTo(app.getMap());
                     });
             }
 
-            map.on('moveend zoomend resize', debounce(renderPubLayer, 1500));
+            app.getMap().on('moveend zoomend resize', debounce(renderPubLayer, 1500));
 
             renderPubLayer();
 
