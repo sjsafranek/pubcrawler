@@ -19,6 +19,7 @@ class Crawl(TimeStampedModel):
     name = models.CharField(max_length=256, unique=True)
     slug = models.SlugField(max_length=255, unique=True, blank=True)
     description = models.TextField(blank=True, null=True)
+    area = models.JSONField(blank=True, null=True, help_text="Stores GeoJSON of crawl area") # stores geojson
 
     def __str__(self):
         return self.name
