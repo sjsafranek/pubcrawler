@@ -57,23 +57,26 @@ def home(request):
     return HttpResponse("Welcome to the PubCrawler!")
 
 
-def view_crawl_page(request, slug):
-    crawl = get_object_or_404(Crawl, slug=slug)
-    return render(request, "crawl/details.html", {
-        "crawl": crawl,
-        "pubs": [{**model_to_dict(stop.pub), **{'completed': stop.completed, 'position': stop.position}} for stop in CrawlPub.objects.filter(crawl=crawl).order_by('position')] 
-    })
-
-
-def get_crawl_pubs(request, crawl_id):
-    crawl = get_object_or_404(Crawl, id=crawl_id)
-    queryset = [
+def get_pubs_by_crawl(crawl):
+    return [
         {
             **model_to_dict(stop.pub), 
             **{'completed': stop.completed, 'position': stop.position}
         } for stop in CrawlPub.objects.filter(crawl=crawl).order_by('position')
     ]
-    df = pd.DataFrame(queryset)
+
+
+def view_crawl_page(request, slug):
+    crawl = get_object_or_404(Crawl, slug=slug)
+    return render(request, "crawl/details.html", {
+        "crawl": crawl,
+        "pubs": get_pubs_by_crawl(crawl)
+    })
+
+
+def get_crawl_pubs(request, crawl_id):
+    crawl = get_object_or_404(Crawl, id=crawl_id)
+    df = pd.DataFrame(get_pubs_by_crawl(crawl))
     df["longitude"] = df["longitude"].astype(float)
     df["latitude"] = df["latitude"].astype(float)
     gdf = gpd.GeoDataFrame(
