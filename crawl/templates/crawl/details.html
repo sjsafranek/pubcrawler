@@ -288,9 +288,9 @@
                         .on("dblclick", function(event) {
                             {% if user.is_authenticated %}
                             if (!pub.complete) {
-                                AdminAPI.complete(feature.properties.id);
+                                AdminAPI.complete(pub.id);
                             } else {
-                                AdminAPI.incomplete(feature.properties.id);
+                                AdminAPI.incomplete(pub.id);
                             }
                             {% endif %}
                         })
