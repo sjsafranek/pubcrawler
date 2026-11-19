@@ -133,16 +133,9 @@
             }).setView([20, 0], 2);
             
             L.tileLayer.osm().addTo(map);
-            
-            map.createPane('crawlPane');
-            map.getPane('crawlPane').style.zIndex = 420;
-            const crawlLayer = L.layerGroup().addTo(map);
 
             const $status = $("#status"), 
-                  $list = $("#list"), 
-                  $type = $("#type"), 
-                  $name = $("#name");
-            let label = "";
+                  $list = $("#list");
 
             function setStatus(text, isError = false) {
                 $status.text(text)
@@ -182,36 +175,70 @@
                     $.getJSON(`/api/v1/crawl/${crawl_id}/pub/${pub_id}/add`)
                         .done(response => { 
                             allPubs.push(response.data.pub);
-                            render();
+                            renderCrawlLayer();
                         });
                 },
                 remove: function(pub_id) {
                     $.getJSON(`/api/v1/crawl/${crawl_id}/pub/${pub_id}/remove`)
                         .done(response => { 
                             allPubs = allPubs.filter(d => d.id != pub_id);
-                            render();
+                            renderCrawlLayer();
                         });
                 }
             }
             {% endif %}
 
 
-            function render() {
-                const type = $type.val(), q = $.trim($name.val()).toLowerCase();
-                const pubs = $.grep(allPubs, pub =>
-                    (!type || pub.subtype === type) && (!q || pub.name.toLowerCase().includes(q)));
+            /**
+             * CrawlLayer
+             */
+            map.createPane('crawlPane');
+            map.getPane('crawlPane').style.zIndex = 420;
+            const crawlLayer = L.layerGroup().addTo(map);
 
+            function makeCrawlPubMarker(i, pub) {
+                let icon = !pub.completed ? createPubPendingIcon(i+1) : createPubCompletedIcon(i+1)
+                let marker = L.marker([pub.latitude, pub.longitude], { 
+                                    icon: icon, 
+                                    pane: 'crawlPane' 
+                                });
+
+                // Create popup
+                let content = popupContent(pub);
+                marker.bindPopup(content);
+
+                // Attach event listeners
+                marker.on({
+                    'mouseover': function (e) {
+                        marker.openPopup();
+                    },
+                    'mouseout': function (e) {
+                        marker.closePopup();
+                    },
+                    'dblclick': function (e) {
+                        L.DomEvent.stopPropagation(e);
+                        {% if user.is_authenticated %}
+                        AdminAPI.remove(pub.id);
+                        {% endif %}
+                    }
+                });
+
+                return marker;
+            }
+
+            function renderCrawlLayer() {
+                // Reset ui elements and map layers
+                setStatus(`Loading...`);
                 crawlLayer.clearLayers();
                 $list.empty();
 
-                // TODO :: Make this a geojson layer
-                $.each(pubs, (i, pub) => {
-                    let icon = !pub.completed ? createPubPendingIcon(i+1) : createPubCompletedIcon(i+1)
-                    const marker = L.marker([pub.latitude, pub.longitude], { icon: icon, pane: 'crawlPane' });
-                    let content = popupContent(pub);
-                    marker.bindPopup(content);
+                // Loop through pubs
+                $.each(allPubs, (i, pub) => {
+                    // Create marker and add to 'crawlLayer'
+                    const marker = makeCrawlPubMarker(i, pub);
                     marker.addTo(crawlLayer);
 
+                    // Add entry to sidebar
                     $("<button>", { type: "button", class: "list-group-item list-group-item-action" })
                         .append($("<div>", { class: "fw-semibold" }).text(pub.name))
                         .append($("<div>", { class: "small text-body-secondary" })
@@ -224,7 +251,6 @@
                             marker.openPopup();
                         })
                         .on("mouseover", function(event) {
-                            console.log(marker);
                             marker._icon.classList.add('marker-pub-active');
                         })
                         .on("mouseout", function(event) {
@@ -232,28 +258,16 @@
                         })
                         .appendTo($list);
 
-                    // Remove pub to crawl
-                    marker.on({
-                        'mouseover': function (e) {
-                            marker.openPopup();
-                        },
-                        'mouseout': function (e) {
-                            marker.closePopup();
-                        },
-                        'dblclick': function (e) {
-                            L.DomEvent.stopPropagation(e);
-                            {% if user.is_authenticated %}
-                            AdminAPI.remove(pub.id);
-                            {% endif %}
-                        }
-                    });
                 });
 
-                if (pubs.length) map.fitBounds(L.latLngBounds($.map(pubs, pub => [[pub.latitude, pub.longitude]])).pad(0.1));
-                if (allPubs.length) setStatus(`${pubs.length} of ${allPubs.length} pubs ${label}`);
+                // Set map view
+                if (allPubs.length) map.fitBounds(L.latLngBounds($.map(allPubs, pub => [[pub.latitude, pub.longitude]])).pad(0.1));
+
+                // Update ui elements
+                if (allPubs.length) setStatus(`${allPubs.length} pubs`);
             }
 
-            render();
+            renderCrawlLayer();
 
 
             /** 
