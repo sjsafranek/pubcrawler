@@ -51,12 +51,6 @@ def buildMissingParameterResponse(parameter_name):
     return buildErrorResponse( f"Missing Parameter: '{parameter_name}'", 404)
 
 
-
-
-def home(request):
-    return HttpResponse("Welcome to the PubCrawler!")
-
-
 def get_pubs_by_crawl(crawl):
     return [
         {
@@ -64,6 +58,7 @@ def get_pubs_by_crawl(crawl):
             **{'completed': stop.completed, 'position': stop.position}
         } for stop in CrawlPub.objects.filter(crawl=crawl).order_by('position')
     ]
+
 
 def makeGeoDataFrameFromDataFrame(df, longitude_column="longitude", latitude_column="latitude"):
     df["longitude"] = df["longitude"].astype(float)
@@ -74,6 +69,10 @@ def makeGeoDataFrameFromDataFrame(df, longitude_column="longitude", latitude_col
             geometry=gpd.points_from_xy(df[longitude_column], df[latitude_column]),
             crs="EPSG:4326"
         )
+
+
+def home(request):
+    return HttpResponse("Welcome to the PubCrawler!")
 
 
 def view_crawl_page(request, slug):
@@ -151,8 +150,10 @@ def import_pubs(request):
 
 
 def search_pubs(request):
-    # Pull and load GeoJson geometry from url parameters
+    # Get geom from url parameters
     geom = request.GET.get("geom")
+
+    # Load GeoJson geometry
     area = gpd.read_file(geom)
 
     # Get bounding box from geometry
@@ -163,6 +164,8 @@ def search_pubs(request):
         model_to_dict(pub) for pub in Pub.objects.filter(longitude__range=(minx, maxx)).filter(latitude__range=(miny, maxy))
     ])
     gdf = makeGeoDataFrameFromDataFrame(df)
+
+    logger.debug(f'{len(gdf)} pubs found within {minx}, {miny}, {maxx}, {maxy}')
 
     # Filter pubs against geometry
     within_gdf = gpd.sjoin(gdf, area, how="inner", predicate="within")
