@@ -298,7 +298,7 @@
                 });
 
                 // Set map view
-                if (2 == map.getZoom()) {
+                if (2 == map.getZoom()) {   // check for starting zoom level
                     if (allPubs.length) {
                         map.fitBounds(L.latLngBounds($.map(allPubs, pub => [[pub.latitude, pub.longitude]])).pad(0.1));
                     }
