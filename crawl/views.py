@@ -65,6 +65,16 @@ def get_pubs_by_crawl(crawl):
         } for stop in CrawlPub.objects.filter(crawl=crawl).order_by('position')
     ]
 
+def makeGeoDataFrameFromDataFrame(df, longitude_column="longitude", latitude_column="latitude"):
+    df["longitude"] = df["longitude"].astype(float)
+    df["latitude"] = df["latitude"].astype(float)
+    # Create the GeoDataFrame (match the SRID of your Django model, e.g., 4326)
+    return gpd.GeoDataFrame(
+            df, 
+            geometry=gpd.points_from_xy(df[longitude_column], df[latitude_column]),
+            crs="EPSG:4326"
+        )
+
 
 def view_crawl_page(request, slug):
     crawl = get_object_or_404(Crawl, slug=slug)
@@ -77,13 +87,7 @@ def view_crawl_page(request, slug):
 def get_crawl_pubs(request, crawl_id):
     crawl = get_object_or_404(Crawl, id=crawl_id)
     df = pd.DataFrame(get_pubs_by_crawl(crawl))
-    df["longitude"] = df["longitude"].astype(float)
-    df["latitude"] = df["latitude"].astype(float)
-    gdf = gpd.GeoDataFrame(
-            df, 
-            geometry=gpd.points_from_xy(df["longitude"], df["latitude"]),
-            crs="EPSG:4326"
-        )
+    gdf = makeGeoDataFrameFromDataFrame(df)
     geojson_str = gdf.to_json(to_wgs84=True, na="drop")
     api_response = buildSuccessResponse(layer=json.loads(geojson_str))
     return JsonResponse(api_response)
@@ -147,48 +151,26 @@ def import_pubs(request):
 
 
 def search_pubs(request):
-    # 1. pull data and create inital dataframe
-    # pubs = Pub.objects.all().values()
-    df = pd.DataFrame([model_to_dict(pub) for pub in Pub.objects.all()])
-    df["longitude"] = df["longitude"].astype(float)
-    df["latitude"] = df["latitude"].astype(float)
-
-    # 2. Create the GeoDataFrame (match the SRID of your Django model, e.g., 4326)
-    gdf = gpd.GeoDataFrame(
-        df, 
-        geometry=gpd.points_from_xy(df["longitude"], df["latitude"]),
-        crs="EPSG:4326"
-    )
-
-    # Use geom if supplied
+    # Pull and load GeoJson geometry from url parameters
     geom = request.GET.get("geom")
-    if (geom):
-        area = gpd.read_file(geom)
-        within_gdf = gpd.sjoin(gdf, area, how="inner", predicate="within")
-        geojson_str = within_gdf.to_json(to_wgs84=True, na="drop")
-        api_response = buildSuccessResponse(layer=json.loads(geojson_str))
-        return JsonResponse(api_response)
+    area = gpd.read_file(geom)
 
-    # Get request attributes
-    longitude = float(request.GET.get("longitude"))
-    latitude = float(request.GET.get("latitude"))
-    radius = int(request.GET.get("radius", 5000))    # meters
-    radius = min(radius, MAX_RADIUS)
-    
-    # 2. Define your center point (lon, lat) and put it in a GeoSeries
-    center = gpd.GeoSeries([Point(longitude, latitude)], crs="EPSG:4326")
+    # Get bounding box from geometry
+    minx, miny, maxx, maxy = area.total_bounds
 
-    # 3. Project both to a metric CRS (e.g., Web Mercator EPSG:3857 or a local UTM zone)
-    gdf_metric = gdf.to_crs(epsg=3857)
-    center_metric = center.to_crs(epsg=3857)
+    # Load pubs from within bounding box
+    df = pd.DataFrame([
+        model_to_dict(pub) for pub in Pub.objects.filter(longitude__range=(minx, maxx)).filter(latitude__range=(miny, maxy))
+    ])
+    gdf = makeGeoDataFrameFromDataFrame(df)
 
-    # 4. Filter by distance (e.g., within 5,000 meters)
-    radius_meters = radius
-    filtered_gdf = gdf[gdf_metric.distance(center_metric.iloc[0]) <= radius_meters]
+    # Filter pubs against geometry
+    within_gdf = gpd.sjoin(gdf, area, how="inner", predicate="within")
 
-    # Optional: Force re-projection to WGS84 (EPSG:4326) and drop missing values
-    geojson_str = filtered_gdf.to_json(to_wgs84=True, na="drop")
+    # Convert to GeoJson
+    geojson_str = within_gdf.to_json(to_wgs84=True, na="drop")
 
+    # Return response
     api_response = buildSuccessResponse(layer=json.loads(geojson_str))
     return JsonResponse(api_response)
 
