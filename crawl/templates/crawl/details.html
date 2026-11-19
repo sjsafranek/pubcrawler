@@ -160,7 +160,10 @@
                         addLine(`&emsp;${times[i]}`);
                     }
                 }
-                if (pub.phone) addLine(pub.phone);
+                if (pub.phone) {
+                    let cleaned = pub.phone.replaceAll('-');
+                    addLine(`<a href="tel:+${cleaned}">📞 ${pub.phone}</a>`);
+                }
                 if (pub.website && /^https?:\/\//.test(pub.website)) {
                     $container.append(
                         $("<br>"),
