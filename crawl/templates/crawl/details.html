@@ -149,7 +149,8 @@
                     document.createTextNode(pub.subtype)
                 );
                 
-                const addLine = text => $container.append($("<br>"), document.createTextNode(text));
+                // const addLine = text => $container.append($("<br>"), document.createTextNode(text));
+                const addLine = text => $container.append($("<br>"), text);
                 if (pub.address_street_number && pub.address_street_name) addLine(`${pub.address_street_number} ${pub.address_street_name}`);
                 if (pub.hours) {
                     // addLine("Hours: " + pub.hours);
