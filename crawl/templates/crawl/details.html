@@ -151,7 +151,14 @@
                 
                 const addLine = text => $container.append($("<br>"), document.createTextNode(text));
                 if (pub.address_street_number && pub.address_street_name) addLine(`${pub.address_street_number} ${pub.address_street_name}`);
-                if (pub.hours) addLine("Hours: " + pub.hours);
+                if (pub.hours) {
+                    // addLine("Hours: " + pub.hours);
+                    let times = pub.hours.split(';');
+                    addLine("Hours: ");
+                    for(let i=0; i<times.length; i++) {
+                        addLine(`&emsp;${times[i]}`);
+                    }
+                }
                 if (pub.phone) addLine(pub.phone);
                 if (pub.website && /^https?:\/\//.test(pub.website)) {
                     $container.append(
@@ -209,14 +216,18 @@
                 marker.on({
                     'mouseover': function (e) {
                         marker.openPopup();
+                        marker._icon.classList.add('marker-pub-active');
                     },
                     'mouseout': function (e) {
                         marker.closePopup();
+                        marker._icon.classList.remove('marker-pub-active');
                     },
                     'dblclick': function (e) {
                         L.DomEvent.stopPropagation(e);
                         {% if user.is_authenticated %}
-                        AdminAPI.remove(pub.id);
+                        if (!pub.completed) {
+                            AdminAPI.remove(pub.id);
+                        }
                         {% endif %}
                     }
                 });
