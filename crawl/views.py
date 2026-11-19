@@ -95,23 +95,28 @@ def toggle_crawl_pub(request, crawl_id, pub_id, action):
     pub = get_object_or_404(Pub, id=pub_id)
     
     if 'add' == action:
-        # position = CrawlPub.objects.filter(crawl=crawl).count()
-        # stop = CrawlPub(crawl=crawl, pub=pub, completed=False, position=position+1)
         stop = CrawlPub(crawl=crawl, pub=pub, completed=False)        
         stop.save()
         api_response = buildSuccessResponse(pub={**model_to_dict(stop.pub), **{'completed': stop.completed, 'position': stop.position}})
         return JsonResponse(api_response)
-    elif 'remove' == action:
-        stop = CrawlPub.objects.get(crawl=crawl, pub=pub)
+
+    stop = CrawlPub.objects.get(crawl=crawl, pub=pub)
+    if 'remove' == action:
         stop.delete()
         api_response = buildSuccessResponse()
         return JsonResponse(api_response) 
+    elif 'complete' == action:
+        stop.completed = True
+        stop.save()
+        api_response = buildSuccessResponse()
+        return JsonResponse(api_response)
+    elif 'incomplete' == action:
+        stop.completed = False
+        stop.save()
+        api_response = buildSuccessResponse()
+        return JsonResponse(api_response)         
 
-    # TODO
-    stop = CrawlPub.objects.filter(crawl=crawl, pub=pub).first()
-    stop.completed = yn;
-    stop.save()
-    api_response = buildSuccessResponse()
+    api_response = buildMethodNotAllowedResponse()
     return JsonResponse(api_response)
 
 
