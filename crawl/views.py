@@ -165,13 +165,12 @@ def search_pubs(request):
     ])
     gdf = makeGeoDataFrameFromDataFrame(df)
 
-    logger.debug(f'{len(gdf)} pubs found within {minx}, {miny}, {maxx}, {maxy}')
-    logger.debug(f'{len(gdf)} pubs found within {area.total_bounds}')
+    logger.debug(f'{len(gdf)} pubs found within [{minx}, {miny}, {maxx}, {maxy}]')
 
     # Filter pubs against geometry
     within_gdf = gpd.sjoin(gdf, area, how="inner", predicate="within")
 
-    # logger.debug(f"{len(within_gdf)} pubs found within '{geom}'")
+    logger.debug(f"{len(within_gdf)} pubs found within '{geom}'")
 
     # Convert to GeoJson
     geojson_str = within_gdf.to_json(to_wgs84=True, na="drop")
