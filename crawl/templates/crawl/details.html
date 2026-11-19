@@ -287,7 +287,7 @@
                         })
                         .on("dblclick", function(event) {
                             {% if user.is_authenticated %}
-                            if (!pub.complete) {
+                            if (!pub.completed) {
                                 AdminAPI.complete(pub.id);
                             } else {
                                 AdminAPI.incomplete(pub.id);
