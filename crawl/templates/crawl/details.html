@@ -118,6 +118,8 @@
         // Initialize application
         $(function () {
 
+            let first = true;
+
             // Parse the JSON data safely in JavaScript
             var allPubs = JSON.parse(document.getElementById('pubs-json').textContent);
             console.log(allPubs);
@@ -299,7 +301,10 @@
                 });
 
                 // Set map view
-                if (allPubs.length) map.fitBounds(L.latLngBounds($.map(allPubs, pub => [[pub.latitude, pub.longitude]])).pad(0.1));
+                if (first) {
+                    if (allPubs.length) map.fitBounds(L.latLngBounds($.map(allPubs, pub => [[pub.latitude, pub.longitude]])).pad(0.1));
+                    first = false;
+                }
 
                 // Update ui elements
                 if (allPubs.length) setStatus(`${allPubs.length} pubs`);
