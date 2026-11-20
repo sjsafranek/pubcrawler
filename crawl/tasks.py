@@ -10,26 +10,26 @@ from .geocoder import reverse_geocode
 logger = logging.getLogger(__name__)
 
 
-def create_pub_if_not_exists(data):
-    pub = Pub.objects.filter(external_id=data['id']).first()
-    if not pub:
-        logger.debug(f"Importing pub '{data['name']}'")
-        pub = Pub.objects.create(
-            name = data['name'],
-            external_id = data['id'],
-            subtype = data['type'],
-            hours = data['hours'],
-            website = data['website'],
-            phone = data['phone'],
-            address_street_number = data['housenumber'],
-            address_street_name = data['street'],
-            address_city = data['city'],
-            address_postcode = data['postcode'],
-            latitude = data['latitude'],
-            longitude = data['longitude']
-        )
-        return pub
-    return pub
+# def create_pub_if_not_exists(data):
+#     pub = Pub.objects.filter(external_id=data['id']).first()
+#     if not pub:
+#         logger.debug(f"Importing pub '{data['name']}'")
+#         pub = Pub.objects.create(
+#             name = data['name'],
+#             external_id = data['id'],
+#             subtype = data['type'],
+#             hours = data['hours'],
+#             website = data['website'],
+#             phone = data['phone'],
+#             address_street_number = data['housenumber'],
+#             address_street_name = data['street'],
+#             address_city = data['city'],
+#             address_postcode = data['postcode'],
+#             latitude = data['latitude'],
+#             longitude = data['longitude']
+#         )
+#         return pub
+#     return pub
 
 
 
