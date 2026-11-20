@@ -9,13 +9,11 @@ from django.http import JsonResponse
 from .models import Pub
 from .models import Crawl
 from .models import CrawlPub
-from .search import fetch_bars_nearby
-from .tasks import create_pub_if_not_exists
 from .services import getPubsByCrawlAsList
 from .services import getPubsByCrawlAsGeoDataFrame
 from .services import getPubsWithinGeometryAsGeoDataFrame
+from .services import importPubsWithinGeometry
 from .utils import getGeoJSONFromGeoDataFrame
-
 
 logger = logging.getLogger(__name__)
 
@@ -113,19 +111,9 @@ def import_pubs(request):
         api_response = buildMethodNotAllowedResponse()
         return JsonResponse(api_response)
 
-    # TODO :: Check user permissions
-        
-    longitude = float(request.GET.get("longitude"))
-    latitude = float(request.GET.get("latitude"))
-    radius = int(request.GET.get("radius", 5000))    # meters
-    radius = min(radius, MAX_RADIUS)
-
-    data = fetch_bars_nearby(lat=latitude, lon=longitude, radius=radius)
-    pubs =  data['bars']
-    for data in pubs:
-        pub = create_pub_if_not_exists(data)
-
-    api_response = buildSuccessResponse(pubs=len(pubs))
+    geom = request.GET.get("geom")
+    pubs = importPubsWithinGeometry(geom)
+    api_response = buildSuccessResponse(pubs=len(records))
     return JsonResponse(api_response)
 
 

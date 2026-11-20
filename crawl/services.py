@@ -7,7 +7,7 @@ from .models import Pub
 from .models import Crawl
 from .models import CrawlPub
 from .utils import getGeoJSONFromGeoDataFrame
-
+from .geodata import downloadPubsWithinArea
 
 
 def makeGeoDataFrameFromDataFrame(df, longitude_column="longitude", latitude_column="latitude"):
@@ -31,15 +31,17 @@ def getPubsByCrawlAsList(crawl):
 
 def getPubsWithinGeometryAsGeoDataFrame(geom):
     # Load GeoJson geometry
-    area = geopandas.read_file(geom)
+    # area = geopandas.read_file(geom)
+    area = geopandas.read_file(geom).to_crs("EPSG:4326")
 
     # Get bounding box from geometry
     minx, miny, maxx, maxy = area.total_bounds
 
     # Load pubs from within bounding box
-    df = pandas.DataFrame([
+    pubs = [
         model_to_dict(pub) for pub in Pub.objects.filter(Q(longitude__range=(minx, maxx)) & Q(latitude__range=(miny, maxy)))
-    ])
+    ]
+    df = pandas.DataFrame(pubs)
     bbox_gdf = makeGeoDataFrameFromDataFrame(df)
 
     # Filter pubs against geometry
@@ -52,4 +54,35 @@ def getPubsByCrawlAsGeoDataFrame(crawl):
     df = pandas.DataFrame(pubs)
     gdf = makeGeoDataFrameFromDataFrame(df)
     return gdf    
+
+
+def createPubIfNotExists(data):
+    pub = Pub.objects.filter(external_id=data['id']).first()
+    if not pub:
+        logger.debug(f"Importing pub '{data['name']}'")
+        pub = Pub.objects.create(
+            name = data['name'],
+            external_id = data['id'],
+            subtype = data['type'],
+            hours = data['hours'],
+            website = data['website'],
+            phone = data['phone'],
+            address_street_number = data['housenumber'],
+            address_street_name = data['street'],
+            address_city = data['city'],
+            address_postcode = data['postcode'],
+            latitude = data['latitude'],
+            longitude = data['longitude']
+        )
+        return pub
+    return pub
+
+
+def importPubsWithinGeometry(geom):
+    pubs = []
+    records = downloadPubsWithinArea(geom)
+    for record in records:
+        pub = createPubIfNotExists(record)
+        pubs.append(pub)
+    return pubs
 

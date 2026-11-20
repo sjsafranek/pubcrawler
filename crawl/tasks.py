@@ -4,7 +4,6 @@ from django.db.models import Q
 from django.tasks import task
 
 from .models import Pub
-from .search import fetch_bars
 from .geocoder import reverse_geocode
 
 
@@ -26,11 +25,14 @@ def create_pub_if_not_exists(data):
             address_street_name = data['street'],
             address_city = data['city'],
             address_postcode = data['postcode'],
-            latitude = data['lat'],
-            longitude = data['lon']
+            latitude = data['latitude'],
+            longitude = data['longitude']
         )
         return pub
     return pub
+
+
+
 
 
 # @task
