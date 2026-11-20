@@ -310,6 +310,7 @@
                     let $checkbox = $(`<input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault_${pub.id}">`);
                     $checkbox.attr('checked', pub.completed);
                     $checkbox.on('change', function(event) {
+                        event.stopPropagation();
                         {% if user.is_authenticated %}
                         if (!pub.completed) {
                             AdminAPI.complete(pub.id);
