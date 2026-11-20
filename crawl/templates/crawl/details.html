@@ -307,9 +307,12 @@
                     // Add entry to sidebar
                     $("<button>", { type: "button", class: "list-group-item list-group-item-action" })
                         .append($("<div>", { class: "fw-semibold" }).text(pub.name))
-                        .append($("<div>", { class: "small text-body-secondary" })
-                        .text([pub.subtype, pub.distance_m != null ? formatDistance(pub.distance_m) : null, pub.address]
-                        .filter(Boolean).join(" · ")))
+                        .append(
+                            $("<div>", { class: "small text-body-secondary" })
+                                .text(
+                                    [pub.subtype, `${pub.address_street_number} ${pub.address_street_name}`].filter(Boolean).join(" · ")
+                                )
+                        )
                         .on("click", function(event) {
                             app.getList().children(".active").removeClass("active");
                             $(this).addClass("active");
@@ -333,7 +336,7 @@
                         })
                         .append(
                             {% if user.is_authenticated %}
-                            $('<div>').append(
+                            $('<div>').addClass('float-end').append(
                                 `<div class="form-check form-switch">
                                     <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault_${pub.id}">
                                     <label class="form-check-label" for="flexSwitchCheckDefault_${pub.id}">Complete</label>
