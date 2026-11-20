@@ -312,7 +312,7 @@
                     $checkbox.attr('checked', pub.completed);
                     $checkbox.on('change', function(event) {
                         console.log(event);
-                        console.log(this.value);
+                        console.log($(this.value).is(':checked'));
                     });
                     $("<button>", { type: "button", class: "list-group-item list-group-item-action" })
                         .append(
