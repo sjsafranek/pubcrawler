@@ -305,6 +305,8 @@
                     marker.addTo(crawlLayer);
 
                     // Add entry to sidebar
+                    console.log(pub);
+                    let status = pub.completed ? "Complete" : "Incomplete";
                     $("<button>", { type: "button", class: "list-group-item list-group-item-action" })
                         .append(
                             $("<div>", {class: 'clearfix'}).append(
@@ -317,7 +319,7 @@
                                     </div>`
                                 )
                                 {% else %}
-                                $('<div>', { class: 'float-end' }).append(pub.complete ? "Complete" : "Incomplete")
+                                $('<div>', { class: 'float-end' }).append(status)
                                 {% endif %}
                             )
                         )
