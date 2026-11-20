@@ -307,17 +307,17 @@
                     // Add entry to sidebar
                     $("<button>", { type: "button", class: "list-group-item list-group-item-action" })
                         .append(
-                            $("<div>").append(
+                            $("<div>", {class: 'clearfix'}).append(
                                 $("<div>", { class: "fw-semibold float-start" }).text(pub.name),
                                 {% if user.is_authenticated %}
-                                $('<div>').addClass('float-end').append(
+                                $('<div>', { class: 'float-end' }).append(
                                     `<div class="form-check form-switch">
                                         <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault_${pub.id}">
                                         <label class="form-check-label" for="flexSwitchCheckDefault_${pub.id}">Complete</label>
                                     </div>`
                                 )
                                 {% else %}
-                                $('<div>').addClass('float-end').append(pub.completed ? "Complete" : "Incomplete")
+                                $('<div>', { class: 'float-end' }).append(pub.complete ? "Complete" : "Incomplete")
                                 {% endif %}
                             )
                         )
