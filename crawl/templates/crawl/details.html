@@ -305,14 +305,19 @@
                     marker.addTo(crawlLayer);
 
                     // Add entry to sidebar
-                    console.log(pub);
                     let status = pub.completed ? "Complete" : "Incomplete";
                     let $label = $(`<label class="form-check-label" for="flexSwitchCheckDefault_${pub.id}"></label>`);
                     let $checkbox = $(`<input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault_${pub.id}">`);
                     $checkbox.attr('checked', pub.completed);
                     $checkbox.on('change', function(event) {
-                        console.log(event);
-                        console.log($(this.value).is(':checked'));
+                        {% if user.is_authenticated %}
+                        if (!pub.completed) {
+                            AdminAPI.complete(pub.id);
+                        } else {
+                            AdminAPI.incomplete(pub.id);
+                        }
+                        {% endif %}
+                        //pub.completed = $checkbox.is(':checked');
                     });
                     $("<button>", { type: "button", class: "list-group-item list-group-item-action" })
                         .append(
@@ -347,15 +352,6 @@
                         })
                         .on("mouseout", function(event) {
                             marker._icon.classList.remove('marker-pub-active');
-                        })
-                        .on("dblclick", function(event) {
-                            {% if user.is_authenticated %}
-                            if (!pub.completed) {
-                                AdminAPI.complete(pub.id);
-                            } else {
-                                AdminAPI.incomplete(pub.id);
-                            }
-                            {% endif %}
                         })
                         .appendTo(app.getList());
 
