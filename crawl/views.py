@@ -140,7 +140,7 @@ def search_pubs(request):
     logger.debug(f"{len(pubs_gdf)} pubs found within '{geom}'")
 
     # Convert to GeoJson
-    geojson = getGeoJSONFromGeoDataFrame(gdf)
+    geojson = getGeoJSONFromGeoDataFrame(pubs_gdf)
 
     # Return response
     api_response = buildSuccessResponse(layer=geojson)
