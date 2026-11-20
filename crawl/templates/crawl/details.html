@@ -59,7 +59,7 @@
             aside {
                 padding-bottom: 96px;
             }
-            
+
 @media (max-width: 767.98px) {
   .form-switch .form-check-input {
     width: 3.5em;
@@ -340,8 +340,8 @@
                                 {% if user.is_authenticated %}
                                 $('<div>', { class: 'float-end' }).append(
                                     $('<div>', { class: 'form-check form-switch' }).append(
-                                        $checkbox,
-                                        $label.append(status)
+                                        $checkbox
+                                        // $label.append(status)
                                     )
                                 )
                                 {% else %}
