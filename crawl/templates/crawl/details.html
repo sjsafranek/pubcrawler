@@ -306,7 +306,21 @@
 
                     // Add entry to sidebar
                     $("<button>", { type: "button", class: "list-group-item list-group-item-action" })
-                        .append($("<div>", { class: "fw-semibold" }).text(pub.name))
+                        .append(
+                            $("<div>", { class: "fw-semibold" }).text(pub.name),
+
+                            {% if user.is_authenticated %}
+                            $('<div>').addClass('float-end').append(
+                                `<div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault_${pub.id}">
+                                    <label class="form-check-label" for="flexSwitchCheckDefault_${pub.id}">Complete</label>
+                                </div>`
+                            )
+                            {% else %}
+                            $('<div>').addClass('float-end').append(pub.completed ? "Complete" : "Incomplete")
+                            {% endif %}
+
+                        )
                         .append(
                             $("<div>", { class: "small text-body-secondary" })
                                 .text(
@@ -334,18 +348,6 @@
                             }
                             {% endif %}
                         })
-                        .append(
-                            {% if user.is_authenticated %}
-                            $('<div>').addClass('float-end').append(
-                                `<div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault_${pub.id}">
-                                    <label class="form-check-label" for="flexSwitchCheckDefault_${pub.id}">Complete</label>
-                                </div>`
-                            )
-                            {% else %}
-                            $('<div>').append(pub.completed ? "Complete" : "Incomplete")
-                            {% endif %}
-                        )
                         .appendTo(app.getList());
 
                 });
