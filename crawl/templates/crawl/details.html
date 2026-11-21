@@ -303,37 +303,45 @@
                     return;
                 }
 
-                // Get users location
-                if ("geolocation" in navigator) {
-                    navigator.geolocation.getCurrentPosition(
-                        (position) => {
-                            console.log(`Latitude: ${position.coords.latitude} Longitude: ${position.coords.longitude}`);
-                            // Create latlng of users location
-                            let location = L.latLng(position.coords.latitude, position.coords.longitude);
-                            // Creates a LatLngBounds object extending 500 meters in each direction (1000m x 1000m box)
-                            let bounds = location.toBounds(500);
-                            let geom = L.rectangle(bounds).toGeoJSON();
-
-                            API.search(geom, query)
-                                .done(response => {
-                                    let results = response.data.pubs;
-                                    for (let i=0; i<results.length; i++) {
-                                        console.log(results[i]);
-                                    }
-                                });
-                        },
-                        (error) => {
-                            console.error(`Error (${error.code}): ${error.message}`);
-                        },
-                        {
-                            enableHighAccuracy: true,
-                            timeout: 30000,
-                            maximumAge: 0
+                let bounds = L.rectangle(app.getCenter().toBounds(1000)).toGeoJSON();
+                API.search(geom, query)
+                    .done(response => {
+                        let results = response.data.pubs;
+                        for (let i=0; i<results.length; i++) {
+                            console.log(results[i]);
                         }
-                    );
-                } else {
-                    console.log("Geolocation is not supported by this browser.");
-                }
+                    });
+                // // Get users location
+                // if ("geolocation" in navigator) {
+                //     navigator.geolocation.getCurrentPosition(
+                //         (position) => {
+                //             console.log(`Latitude: ${position.coords.latitude} Longitude: ${position.coords.longitude}`);
+                //             // Create latlng of users location
+                //             let location = L.latLng(position.coords.latitude, position.coords.longitude);
+                //             // Creates a LatLngBounds object extending 500 meters in each direction (1000m x 1000m box)
+                //             let bounds = location.toBounds(500);
+                //             let geom = L.rectangle(bounds).toGeoJSON();
+
+                //             API.search(geom, query)
+                //                 .done(response => {
+                //                     let results = response.data.pubs;
+                //                     for (let i=0; i<results.length; i++) {
+                //                         console.log(results[i]);
+                //                     }
+                //                 });
+                //         },
+                //         (error) => {
+                //             console.error(`Error (${error.code}): ${error.message}`);
+                //         },
+                //         {
+                //             enableHighAccuracy: true,
+                //             timeout: 30000,
+                //             maximumAge: 0
+                //         }
+                //     );
+                // } else {
+                //     console.log("Geolocation is not supported by this browser.");
+                // }
 
             }
             $searchInput.on('keyup', debounce(searchPubs, 1500));
