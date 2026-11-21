@@ -358,7 +358,6 @@
                             (!pub.completed && _isLast) ? $removeButton : null,
                         )
                     );
-                    console.log($actionsDropdown.find('ul').length);
                     {% endif %}
                     
                     let $listItem = $("<div>", { type: "button", class: "list-group-item list-group-item-action" })
@@ -372,7 +371,7 @@
                                     //     $checkbox
                                     //     // $label.append(status)
                                     // )
-                                    (0 != $actionsDropdown.find('ul').length) && $actionsDropdown,
+                                    (0 != $actionsDropdown.find('li').length) && $actionsDropdown,
                                 ),
                                 {% else %}
                                 $('<div>', { class: 'float-end' }).append(status)
