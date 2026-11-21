@@ -306,45 +306,48 @@
                 let bounds = L.rectangle(app.getMap().getCenter().toBounds(1000)).toGeoJSON();
                 API.search(bounds, query)
                     .done(response => {
-                        let results = response.data.layer.features;
-                        for (let i=0; i<results.length; i++) {
-                            console.log(results[i]);
-                        }
+                        let results = response.data.layer.features.map(d => d.properties);
+                        renderDropdown(results);
                     });
-
-                // // Get users location
-                // if ("geolocation" in navigator) {
-                //     navigator.geolocation.getCurrentPosition(
-                //         (position) => {
-                //             console.log(`Latitude: ${position.coords.latitude} Longitude: ${position.coords.longitude}`);
-                //             // Create latlng of users location
-                //             let location = L.latLng(position.coords.latitude, position.coords.longitude);
-                //             // Creates a LatLngBounds object extending 500 meters in each direction (1000m x 1000m box)
-                //             let bounds = location.toBounds(500);
-                //             let geom = L.rectangle(bounds).toGeoJSON();
-
-                //             API.search(geom, query)
-                //                 .done(response => {
-                //                     let results = response.data.pubs;
-                //                     for (let i=0; i<results.length; i++) {
-                //                         console.log(results[i]);
-                //                     }
-                //                 });
-                //         },
-                //         (error) => {
-                //             console.error(`Error (${error.code}): ${error.message}`);
-                //         },
-                //         {
-                //             enableHighAccuracy: true,
-                //             timeout: 30000,
-                //             maximumAge: 0
-                //         }
-                //     );
-                // } else {
-                //     console.log("Geolocation is not supported by this browser.");
-                // }
-
             }
+
+  function renderDropdown(items) {
+    resultsDropdown.innerHTML = '';
+
+    if (items.length === 0) {
+      resultsDropdown.innerHTML = '<li><span class="dropdown-item-text text-muted">No results found</span></li>';
+    } else {
+      items.forEach(item => {
+        const li = document.createElement('li');
+        const a = document.createElement('a');
+        a.className = 'dropdown-item';
+        a.href = '#';
+        a.textContent = item.name;
+        
+        // Handle item selection
+        a.addEventListener('click', (e) => {
+          e.preventDefault();
+          searchInput.value = item.name;
+          resultsDropdown.classList.remove('show');
+          console.log('Selected ID:', item.id);
+        });
+
+        li.appendChild(a);
+        resultsDropdown.appendChild(li);
+      });
+    }
+
+    resultsDropdown.classList.add('show');
+  }
+
+  // Hide dropdown when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!searchInput.contains(e.target) && !resultsDropdown.contains(e.target)) {
+      resultsDropdown.classList.remove('show');
+    }
+  });
+
+
             $searchInput.on('keyup', debounce(searchPubs, 1500));
             {% endif %}
 
@@ -569,6 +572,40 @@
             //         });
             //         pathLayer.addTo(map);
             //     });
+
+
+
+                // // Get users location
+                // if ("geolocation" in navigator) {
+                //     navigator.geolocation.getCurrentPosition(
+                //         (position) => {
+                //             console.log(`Latitude: ${position.coords.latitude} Longitude: ${position.coords.longitude}`);
+                //             // Create latlng of users location
+                //             let location = L.latLng(position.coords.latitude, position.coords.longitude);
+                //             // Creates a LatLngBounds object extending 500 meters in each direction (1000m x 1000m box)
+                //             let bounds = location.toBounds(500);
+                //             let geom = L.rectangle(bounds).toGeoJSON();
+
+                //             API.search(geom, query)
+                //                 .done(response => {
+                //                     let results = response.data.pubs;
+                //                     for (let i=0; i<results.length; i++) {
+                //                         console.log(results[i]);
+                //                     }
+                //                 });
+                //         },
+                //         (error) => {
+                //             console.error(`Error (${error.code}): ${error.message}`);
+                //         },
+                //         {
+                //             enableHighAccuracy: true,
+                //             timeout: 30000,
+                //             maximumAge: 0
+                //         }
+                //     );
+                // } else {
+                //     console.log("Geolocation is not supported by this browser.");
+                // }
 
         });
 
