@@ -338,7 +338,7 @@
                     });
 
                     let $listItem = $("<div>", { type: "button", class: "list-group-item list-group-item-action" })
-                        .data({pub_id: pub.id})
+                        .attr({'data-pub-id': pub.id})
                         .append(
                             $("<div>", {class: 'clearfix'}).append(
                                 $("<div>", { class: "fw-semibold float-start" }).text(pub.name),
