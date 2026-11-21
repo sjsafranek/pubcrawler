@@ -325,7 +325,6 @@
                     let $checkbox = $(`<input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault_${pub.id}">`);
                     $checkbox.attr('checked', pub.completed);
                     $checkbox.on('change', function(event) {
-                        // event.stopPropagation();
                         {% if user.is_authenticated %}
                         if (!pub.completed) {
                             AdminAPI.complete(pub.id);
@@ -333,9 +332,8 @@
                             AdminAPI.incomplete(pub.id);
                         }
                         {% endif %}
-                        //pub.completed = $checkbox.is(':checked');
                     });
-                    $("<div>", { type: "button", class: "list-group-item list-group-item-action" })
+                    let $listItem = $("<div>", { type: "button", class: "list-group-item list-group-item-action" })
                         .append(
                             $("<div>", {class: 'clearfix'}).append(
                                 $("<div>", { class: "fw-semibold float-start" }).text(pub.name),
@@ -368,8 +366,16 @@
                         })
                         .on("mouseout", function(event) {
                             marker._icon.classList.remove('marker-pub-active');
-                        })
-                        .appendTo(app.getList());
+                        });
+
+                    // Add list item to list
+                    $listItem.appendTo(app.getList());
+
+                    // Highlight list item on marker popup open
+                    marker.on('popupopen', function (event) {
+                        $('.list-group-item-action').removeClass('active');
+                        $$listItem.addClass('active');
+                    });
 
                 });
 
