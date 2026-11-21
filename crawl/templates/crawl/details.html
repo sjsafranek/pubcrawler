@@ -291,19 +291,19 @@
                     },
                     'mouseout': function (e) {
                         marker._icon.classList.remove('marker-pub-active');
-                    },
-                    'dblclick': function (e) {
-                        L.DomEvent.stopPropagation(e);
-                        {% if user.is_authenticated %}
-                        // Only remove incompleted stops
-                        if (!pub.completed) {
-                            // Only remove the last stops
-                            if (allPubs[allPubs.length - 1].id == pub.id) {
-                                AdminAPI.remove(pub.id);
-                            }
-                        }
-                        {% endif %}
                     }
+                    // 'dblclick': function (e) {
+                    //     L.DomEvent.stopPropagation(e);
+                    //     {% if user.is_authenticated %}
+                    //     // Only remove incompleted stops
+                    //     if (!pub.completed) {
+                    //         // Only remove the last stops
+                    //         if (allPubs[allPubs.length - 1].id == pub.id) {
+                    //             AdminAPI.remove(pub.id);
+                    //         }
+                    //     }
+                    //     {% endif %}
+                    // }
                 });
 
                 return marker;
@@ -337,25 +337,28 @@
                     //     {% endif %}
                     // });
 
-{% if user.is_authenticated %}
-                    let $actionsDropdown = $(`
-<div class="dropdown">
-    <button class="btn btn-sm btn-outline-info dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-        Menu
-    </button>
-    <ul class="dropdown-menu">
-        <li><a class="dropdown-item" data-action="remove" href="#">Remove</a></li>
-        <li><a class="dropdown-item" data-action="complete" href="#">Complete</a></li>
-        <li><a class="dropdown-item" data-action="incomplete" href="#">Incomplete</a></li>
-    </ul>
-</div>`);
+                    {% if user.is_authenticated %}
+                    let $completeButton = $(`<a class="dropdown-item" href="#">Complete</a>`).on('click', function(event) {
+                        return AdminAPI.complete(pub.id);
+                    });
 
-                    $actionsDropdown.find('.dropdown-item')
-                        .on('click', function(event) {
-                            console.log(event);
-                            debugger;
-                        });
-{% endif %}
+                    let $incompleteButton = $(`<a class="dropdown-item" href="#">Incomplete</a>`).on('click', function(event) {
+                        return AdminAPI.incomplete(pub.id);
+                    });
+
+                    let $removeButton = $(`<a class="dropdown-item" href="#">Remove</a>`).on('click', function(event) {
+                        return AdminAPI.remove(pub.id);
+                    });                    
+
+                    let $actionsDropdown = $('<div>', { class: 'dropdown' }).append(
+                        $(`<button class="btn btn-sm btn-outline-info dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Menu</button>`),
+                        $('<ul>', { class: 'dropdown-menu' }).append(
+                            !pub.completed ? $completeButton : $incompleteButton,
+                            allPubs[allPubs.length - 1].id == pub.id ? $removeButton : null,
+                        )
+                    );
+                    {% endif %}
+                    
                     let $listItem = $("<div>", { type: "button", class: "list-group-item list-group-item-action" })
                         .attr({'data-pub-id': pub.id})
                         .append(
@@ -369,7 +372,6 @@
                                     // )
                                     $actionsDropdown,
                                 ),
-                                
                                 {% else %}
                                 $('<div>', { class: 'float-end' }).append(status)
                                 {% endif %}
