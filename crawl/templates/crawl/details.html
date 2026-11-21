@@ -312,6 +312,7 @@
             }
 
   function renderDropdown(items) {
+    let resultsDropdown = searchResults.get(0); 
     resultsDropdown.innerHTML = '';
 
     if (items.length === 0) {
@@ -327,7 +328,7 @@
         // Handle item selection
         a.addEventListener('click', (e) => {
           e.preventDefault();
-          searchInput.value = item.name;
+          $searchInput.get(0).value = item.name;
           resultsDropdown.classList.remove('show');
           console.log('Selected ID:', item.id);
         });
@@ -342,7 +343,8 @@
 
   // Hide dropdown when clicking outside
   document.addEventListener('click', (e) => {
-    if (!searchInput.contains(e.target) && !resultsDropdown.contains(e.target)) {
+    let resultsDropdown = searchResults.get(0); 
+    if (!$searchInput.get(0).contains(e.target) && !resultsDropdown.contains(e.target)) {
       resultsDropdown.classList.remove('show');
     }
   });
