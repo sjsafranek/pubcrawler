@@ -340,7 +340,7 @@
 {% if user.is_authenticated %}
                     let $actionsDropdown = $(`
 <div class="dropdown">
-    <button class="btn btn-small btn-outline-info dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <button class="btn btn-sm btn-outline-info dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
         Menu
     </button>
     <ul class="dropdown-menu">
@@ -362,13 +362,14 @@
                             $("<div>", {class: 'clearfix'}).append(
                                 $("<div>", { class: "fw-semibold float-start" }).text(pub.name),
                                 {% if user.is_authenticated %}
-                                // $('<div>', { class: 'float-end' }).append(
-                                //     $('<div>', { class: 'form-check form-switch' }).append(
-                                //         $checkbox
-                                //         // $label.append(status)
-                                //     )
-                                // ),
-                                $actionsDropdown,
+                                $('<div>', { class: 'float-end' }).append(
+                                    // $('<div>', { class: 'form-check form-switch' }).append(
+                                    //     $checkbox
+                                    //     // $label.append(status)
+                                    // )
+                                    $actionsDropdown,
+                                ),
+                                
                                 {% else %}
                                 $('<div>', { class: 'float-end' }).append(status)
                                 {% endif %}
