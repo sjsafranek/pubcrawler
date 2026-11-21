@@ -125,12 +125,12 @@ def search_pubs(request):
 
     # Filter pubs against geometry
     pubs_gdf = getPubsWithinGeometryAsGeoDataFrame(geom)
+    logger.debug(f"{len(pubs_gdf)} pubs found within '{geom}'")
 
     # If query is provided
     if query:
         pubs_gdf = pubs_gdf[pubs_gdf['name'].str.contains(query, case=False, na=False)]
-
-    logger.debug(f"{len(pubs_gdf)} pubs found within '{geom}'")
+        logger.debug(f"{len(pubs_gdf)} pubs found with query '%{query}%'")
 
     # Convert to GeoJson
     geojson = getGeoJSONFromGeoDataFrame(pubs_gdf)
