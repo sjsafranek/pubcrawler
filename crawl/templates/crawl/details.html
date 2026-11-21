@@ -82,10 +82,11 @@
 
             <!-- Sidebar -->
             <aside class="col-lg-4 col-xl-3 order-2 order-lg-1 d-flex flex-column border-end bg-body" style="max-height: 100vh;">
-                <header class="p-3 border-bottom">
+                <!-- <header class="p-3 border-bottom"> -->
                     <!-- <h1 class="h3 mb-3">{{crawl.name}}</h1> -->
-                    <h1 class="h3">{{crawl.name}}</h1>
-                </header>
+                    <!-- <h1 class="h3">{{crawl.name}}</h1> -->
+                <!-- </header> -->
+                <div id="status" class="px-3 py-2 small text-body-secondary border-bottom" role="status"></div>
                 <div id="list" class="list-group list-group-flush overflow-auto flex-grow-1"></div>
             </aside>
 
@@ -295,18 +296,6 @@
                     'mouseout': function (e) {
                         marker._icon.classList.remove('marker-pub-active');
                     }
-                    // 'dblclick': function (e) {
-                    //     L.DomEvent.stopPropagation(e);
-                    //     {% if user.is_authenticated %}
-                    //     // Only remove incompleted stops
-                    //     if (!pub.completed) {
-                    //         // Only remove the last stops
-                    //         if (allPubs[allPubs.length - 1].id == pub.id) {
-                    //             AdminAPI.remove(pub.id);
-                    //         }
-                    //     }
-                    //     {% endif %}
-                    // }
                 });
 
                 return marker;
