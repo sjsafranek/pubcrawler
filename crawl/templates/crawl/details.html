@@ -312,7 +312,7 @@
             }
 
   function renderDropdown(items) {
-    let resultsDropdown = searchResults.get(0); 
+    let resultsDropdown = $searchResults.get(0); 
     resultsDropdown.innerHTML = '';
 
     if (items.length === 0) {
@@ -343,7 +343,7 @@
 
   // Hide dropdown when clicking outside
   document.addEventListener('click', (e) => {
-    let resultsDropdown = searchResults.get(0); 
+    let resultsDropdown = $searchResults.get(0); 
     if (!$searchInput.get(0).contains(e.target) && !resultsDropdown.contains(e.target)) {
       resultsDropdown.classList.remove('show');
     }
