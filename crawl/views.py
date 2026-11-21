@@ -121,9 +121,14 @@ def import_pubs(request):
 def search_pubs(request):
     # Get geom from url parameters
     geom = request.GET.get("geom")
+    query = request.GET.get("query")
 
     # Filter pubs against geometry
     pubs_gdf = getPubsWithinGeometryAsGeoDataFrame(geom)
+
+    # If query is provided
+    if query:
+        pubs_gdf = pubs_gdf[pubs_gdf['name'].str.contains(query, case=False, na=False)]
 
     logger.debug(f"{len(pubs_gdf)} pubs found within '{geom}'")
 

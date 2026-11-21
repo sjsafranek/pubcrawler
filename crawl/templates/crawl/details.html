@@ -88,7 +88,7 @@
                 <!-- </header> -->
 
                 {% if user.is_authenticated %}
-                <div class="dropdown p-2">
+                <div class="dropdown border-bottom p-2">
                     <input 
                       type="text" 
                       id="searchInput" 
@@ -242,6 +242,17 @@
             }
 
 
+            const API = {
+                search: function(geom, query) {
+                    let geomString = encodeURIComponent(JSON.stringify(geom));
+                    if (!query)
+                        return $.getJSON(`/api/v1/pubs/search?geom=${geomString}`);
+                    let queryString = encodeURIComponent(query);
+                    return $.getJSON(`/api/v1/pubs/search?geom=${geomString}&query=${queryString}`);
+                }
+            }
+
+
             {% if user.is_authenticated %}
             /** 
              * AdminAPI
@@ -279,8 +290,53 @@
                             renderCrawlLayer();
                             $(`.list-group-item-action[data-pub-id="${pub_id}"]`).addClass('active');
                         });
-                }                              
+                }
             }
+
+            // Handle pub search
+            let $searchInput = $('#searchInput');
+            let $searchResults = $('#searchResults')
+            function searchPubs(event) {
+                let query = $searchInput.val().trim();
+                if (query.length < 2) {
+                    $searchResults.removeClass('show');
+                    return;
+                }
+
+                // Get users location
+                if ("geolocation" in navigator) {
+                    navigator.geolocation.getCurrentPosition(
+                        (position) => {
+                            console.log(`Latitude: ${position.coords.latitude} Longitude: ${position.coords.longitude}`);
+                            // Create latlng of users location
+                            let location = L.latLng(position.coords.latitude, position.coords.longitude);
+                            // Creates a LatLngBounds object extending 500 meters in each direction (1000m x 1000m box)
+                            let bounds = location.toBounds(500);
+                            let geom = L.rectangle(bounds).toGeoJSON();
+
+                            API.search(geom, query)
+                                .done(response => {
+                                    let results = response.data.pubs;
+                                    for (let i=0; i<results.length; i++) {
+                                        console.log(results[i]);
+                                    }
+                                });
+                        },
+                        (error) => {
+                            console.error(`Error (${error.code}): ${error.message}`);
+                        },
+                        {
+                            enableHighAccuracy: true,
+                            timeout: 5000,
+                            maximumAge: 0
+                        }
+                    );
+                } else {
+                    console.log("Geolocation is not supported by this browser.");
+                }
+
+            }
+            $searchPubsInput.on('keyup', debounce(searchPubs, 1500));
             {% endif %}
 
 
@@ -474,7 +530,7 @@
             function renderPubLayer() {
                 let bounds = L.rectangle(app.getMap().getBounds()).toGeoJSON();
                 let geom = encodeURIComponent(JSON.stringify(bounds));
-                $.getJSON(`/api/v1/pubs/search?geom=${geom}`)
+                API.search(geom)
                     .done(data => {
                         pubLayer && pubLayer.remove();
                         pubLayer = makePubLayer(data.data.layer);
