@@ -363,7 +363,7 @@
                         .on("click", function(event) {
                             app.getList().children(".active").removeClass("active");
                             $(this).addClass("active");
-                            app.getMap().setView([pub.latitude, pub.longitude], Math.max(app.getMap().getZoom(), 16));
+                            app.getMap().setView([pub.latitude, pub.longitude], Math.max(app.getMap().getZoom(), 17));
                             marker.openPopup();
                         })
                         .on("mouseover", function(event) {
@@ -388,7 +388,7 @@
                 if (2 == app.getMap().getZoom()) {   // check for starting zoom level
                     if (allPubs.length) {
                         // app.getMap().fitBounds(L.latLngBounds($.map(allPubs, pub => [[pub.latitude, pub.longitude]])).pad(0.1));
-                        app.getMap().fitBounds(L.helpers.getLayerGroupBounds(crawlLayer).pad(0.1), {'maxZoom': 16});
+                        app.getMap().fitBounds(L.helpers.getLayerGroupBounds(crawlLayer).pad(0.1), {'maxZoom': 17});
                     }
                 }
 
