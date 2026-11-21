@@ -129,6 +129,7 @@ def search_pubs(request):
 
     # If query is provided
     if query:
+        print(query)
         pubs_gdf = pubs_gdf[pubs_gdf['name'].str.contains(query, case=False, na=False)]
         logger.debug(f"{len(pubs_gdf)} pubs found with query '%{query}%'")
 
