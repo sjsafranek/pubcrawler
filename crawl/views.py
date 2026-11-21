@@ -128,7 +128,7 @@ def search_pubs(request):
 
     # Filter pubs against geometry
     pubs_gdf = getPubsWithinGeometryAsGeoDataFrame(geom)
-    if not pubs_gdf:
+    if 0 == len(pubs_gdf):
         api_response = buildNotFoundResponse()
         return JsonResponse(api_response)
     logger.debug(f"{len(pubs_gdf)} pubs found within '{geom}'")
