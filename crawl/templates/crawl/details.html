@@ -285,18 +285,20 @@
                 // Attach event listeners
                 marker.on({
                     'mouseover': function (e) {
-                        // marker.openPopup();
                         marker._icon.classList.add('marker-pub-active');
                     },
                     'mouseout': function (e) {
-                        // marker.closePopup();
                         marker._icon.classList.remove('marker-pub-active');
                     },
                     'dblclick': function (e) {
                         L.DomEvent.stopPropagation(e);
                         {% if user.is_authenticated %}
+                        // Only remove incompleted stops
                         if (!pub.completed) {
-                            AdminAPI.remove(pub.id);
+                            // Only remove the last stops
+                            if (allPubs[allPubs.length - 1].id == pub.id) {
+                                AdminAPI.remove(pub.id);
+                            }
                         }
                         {% endif %}
                     }
@@ -333,7 +335,7 @@
                         {% endif %}
                         //pub.completed = $checkbox.is(':checked');
                     });
-                    $("<button>", { type: "button", class: "list-group-item list-group-item-action" })
+                    $("<div>", { type: "button", class: "list-group-item list-group-item-action" })
                         .append(
                             $("<div>", {class: 'clearfix'}).append(
                                 $("<div>", { class: "fw-semibold float-start" }).text(pub.name),
