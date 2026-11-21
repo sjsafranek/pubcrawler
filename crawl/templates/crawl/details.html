@@ -303,7 +303,7 @@
                     return;
                 }
 
-                let bounds = L.rectangle(app.getCenter().toBounds(1000)).toGeoJSON();
+                let bounds = L.rectangle(app.getMap().getCenter().toBounds(1000)).toGeoJSON();
                 API.search(geom, query)
                     .done(response => {
                         let results = response.data.pubs;
