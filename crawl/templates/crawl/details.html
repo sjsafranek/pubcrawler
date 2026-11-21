@@ -86,6 +86,18 @@
                     <!-- <h1 class="h3 mb-3">{{crawl.name}}</h1> -->
                     <!-- <h1 class="h3">{{crawl.name}}</h1> -->
                 <!-- </header> -->
+
+                <div class="dropdown">
+                    <input 
+                      type="text" 
+                      id="searchInput" 
+                      class="form-control" 
+                      placeholder="Search pubs..." 
+                      autocomplete="off"
+                    >
+                    <ul id="searchResults" class="dropdown-menu w-100 shadow-sm"></ul>
+                </div>
+
                 <div id="status" class="px-3 py-2 small text-body-secondary border-bottom" role="status"></div>
                 <div id="list" class="list-group list-group-flush overflow-auto flex-grow-1"></div>
             </aside>
@@ -388,12 +400,12 @@
                 // Set map view
                 if (2 == app.getMap().getZoom()) {   // check for starting zoom level
                     if (allPubs.length) {
-                        // app.getMap().fitBounds(L.latLngBounds($.map(allPubs, pub => [[pub.latitude, pub.longitude]])).pad(0.1));
                         app.getMap().fitBounds(L.helpers.getLayerGroupBounds(crawlLayer).pad(0.1), {'maxZoom': 17});
                     }
                 }
 
                 // Update ui elements
+                // let n_completed = allPubs.filter(d => d.completed).length;
                 if (allPubs.length) app.setStatus(`${allPubs.length} pubs`);
             }
 
