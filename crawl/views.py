@@ -123,6 +123,9 @@ def search_pubs(request):
     geom = request.GET.get("geom")
     query = request.GET.get("query")
 
+    logger.debug(geom)
+    logger.debug(query)
+
     # Filter pubs against geometry
     pubs_gdf = getPubsWithinGeometryAsGeoDataFrame(geom)
     logger.debug(f"{len(pubs_gdf)} pubs found within '{geom}'")
