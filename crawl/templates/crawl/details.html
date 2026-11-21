@@ -354,7 +354,7 @@
                         $(`<button class="btn btn-sm btn-outline-info dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Menu</button>`),
                         $('<ul>', { class: 'dropdown-menu' }).append(
                             !pub.completed ? $completeButton : $incompleteButton,
-                            allPubs[allPubs.length - 1].id == pub.id ? $removeButton : null,
+                            (!pub.completed && allPubs[allPubs.length - 1].id == pub.id) ? $removeButton : null,
                         )
                     );
                     {% endif %}
