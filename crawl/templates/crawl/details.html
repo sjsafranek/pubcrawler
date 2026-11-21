@@ -250,6 +250,7 @@
                             let pub = allPubs.filter(d => d.id == pub_id)[0];
                             pub.completed = true;
                             renderCrawlLayer();
+                            $(`.list-group-item-action[data-pub-id="${pub_id}"]`).addClass('active');
                         });
                 },
                 incomplete: function(pub_id) {
@@ -258,6 +259,7 @@
                             let pub = allPubs.filter(d => d.id == pub_id)[0];
                             pub.completed = false;
                             renderCrawlLayer();
+                            $(`.list-group-item-action[data-pub-id="${pub_id}"]`).addClass('active');
                         });
                 }                              
             }
@@ -320,7 +322,8 @@
                     marker.addTo(crawlLayer);
 
                     // Add entry to sidebar
-                    let status = pub.completed ? "Complete" : "Incomplete";
+                    // let status = pub.completed ? "Complete" : "Incomplete";
+                    
                     let $label = $(`<label class="form-check-label" for="flexSwitchCheckDefault_${pub.id}"></label>`);
                     let $checkbox = $(`<input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault_${pub.id}">`);
                     $checkbox.attr('checked', pub.completed);
@@ -333,7 +336,9 @@
                         }
                         {% endif %}
                     });
+
                     let $listItem = $("<div>", { type: "button", class: "list-group-item list-group-item-action" })
+                        .data({pub_id: pub.id})
                         .append(
                             $("<div>", {class: 'clearfix'}).append(
                                 $("<div>", { class: "fw-semibold float-start" }).text(pub.name),
