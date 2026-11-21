@@ -322,46 +322,53 @@
                     marker.addTo(crawlLayer);
 
                     // Add entry to sidebar
-                    // let status = pub.completed ? "Complete" : "Incomplete";
+                    let status = pub.completed ? "Complete" : "Incomplete";
                     
                     let $label = $(`<label class="form-check-label" for="flexSwitchCheckDefault_${pub.id}"></label>`);
                     let $checkbox = $(`<input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault_${pub.id}">`);
-                    $checkbox.attr('checked', pub.completed);
-                    $checkbox.on('change', function(event) {
-                        {% if user.is_authenticated %}
-                        if (!pub.completed) {
-                            AdminAPI.complete(pub.id);
-                        } else {
-                            AdminAPI.incomplete(pub.id);
-                        }
-                        {% endif %}
-                    });
+                    // $checkbox.attr('checked', pub.completed);
+                    // $checkbox.on('change', function(event) {
+                    //     {% if user.is_authenticated %}
+                    //     if (!pub.completed) {
+                    //         AdminAPI.complete(pub.id);
+                    //     } else {
+                    //         AdminAPI.incomplete(pub.id);
+                    //     }
+                    //     {% endif %}
+                    // });
 
+{% if user.is_authenticated %}
+                    let $actionsDropdown = $(`
+<div class="dropdown">
+    <button class="btn btn-small btn-outline-info dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+        Menu
+    </button>
+    <ul class="dropdown-menu">
+        <li><a class="dropdown-item" data-action="remove" href="#">Remove</a></li>
+        <li><a class="dropdown-item" data-action="complete" href="#">Complete</a></li>
+        <li><a class="dropdown-item" data-action="incomplete" href="#">Incomplete</a></li>
+    </ul>
+</div>`);
+
+                    $actionsDropdown.find('.dropdown-item')
+                        .on('click', function(event) {
+                            console.log(event);
+                            debugger;
+                        });
+{% endif %}
                     let $listItem = $("<div>", { type: "button", class: "list-group-item list-group-item-action" })
                         .attr({'data-pub-id': pub.id})
                         .append(
                             $("<div>", {class: 'clearfix'}).append(
                                 $("<div>", { class: "fw-semibold float-start" }).text(pub.name),
                                 {% if user.is_authenticated %}
-                                $('<div>', { class: 'float-end' }).append(
-                                    $('<div>', { class: 'form-check form-switch' }).append(
-                                        $checkbox
-                                        // $label.append(status)
-                                    )
-                                ),
-
-$(`<div class="dropdown">
-  <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-    Menu
-  </button>
-  <ul class="dropdown-menu">
-    <li><a class="dropdown-item" href="#">Action</a></li>
-    <li><a class="dropdown-item" href="#">Another action</a></li>
-    <li><hr class="dropdown-divider"></li>
-    <li><a class="dropdown-item" href="#">Separated link</a></li>
-  </ul>
-</div>`)
-
+                                // $('<div>', { class: 'float-end' }).append(
+                                //     $('<div>', { class: 'form-check form-switch' }).append(
+                                //         $checkbox
+                                //         // $label.append(status)
+                                //     )
+                                // ),
+                                $actionsDropdown,
                                 {% else %}
                                 $('<div>', { class: 'float-end' }).append(status)
                                 {% endif %}
