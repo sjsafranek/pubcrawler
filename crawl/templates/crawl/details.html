@@ -371,7 +371,7 @@
                                     //     $checkbox
                                     //     // $label.append(status)
                                     // )
-                                    $actionsDropdown,
+                                    (0 != $actionsDropdown.find('ul').length) && $actionsDropdown,
                                 ),
                                 {% else %}
                                 $('<div>', { class: 'float-end' }).append(status)
