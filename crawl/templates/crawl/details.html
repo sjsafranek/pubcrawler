@@ -529,8 +529,7 @@
             var pubLayer = null;
             function renderPubLayer() {
                 let bounds = L.rectangle(app.getMap().getBounds()).toGeoJSON();
-                let geom = encodeURIComponent(JSON.stringify(bounds));
-                API.search(geom)
+                API.search(bounds)
                     .done(data => {
                         pubLayer && pubLayer.remove();
                         pubLayer = makePubLayer(data.data.layer);
