@@ -78,11 +78,9 @@
             <!-- Sidebar -->
             <aside class="col-lg-4 col-xl-3 order-2 order-lg-1 d-flex flex-column border-end bg-body" style="max-height: 100vh;">
                 <header class="p-3 border-bottom">
-                    <h1 class="h3 mb-3">{{crawl.name}}</h1>
+                    <!-- <h1 class="h3 mb-3">{{crawl.name}}</h1> -->
+                    <h1 class="h3">{{crawl.name}}</h1>
                 </header>
-<!--                 <div id="status" class="px-3 py-2 small text-body-secondary border-bottom" role="status">
-                    Loading...
-                </div> -->
                 <div id="list" class="list-group list-group-flush overflow-auto flex-grow-1"></div>
             </aside>
 
@@ -325,19 +323,9 @@
                     let status = pub.completed ? "Complete" : "Incomplete";
                     let _isLast = allPubs[allPubs.length - 1].id == pub.id;
                     let $label = $(`<label class="form-check-label" for="flexSwitchCheckDefault_${pub.id}"></label>`);
-                    let $checkbox = $(`<input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault_${pub.id}">`);
-                    // $checkbox.attr('checked', pub.completed);
-                    // $checkbox.on('change', function(event) {
-                    //     {% if user.is_authenticated %}
-                    //     if (!pub.completed) {
-                    //         AdminAPI.complete(pub.id);
-                    //     } else {
-                    //         AdminAPI.incomplete(pub.id);
-                    //     }
-                    //     {% endif %}
-                    // });
 
                     {% if user.is_authenticated %}
+                    // Build menu action items
                     let $completeButton = $(`<a class="dropdown-item" href="#">Complete</a>`).on('click', function(event) {
                         return AdminAPI.complete(pub.id);
                     });
@@ -360,6 +348,7 @@
                     );
                     {% endif %}
                     
+                    // Create list item for sidebar
                     let $listItem = $("<div>", { type: "button", class: "list-group-item list-group-item-action" })
                         .attr({'data-pub-id': pub.id})
                         .append(
@@ -367,10 +356,6 @@
                                 $("<div>", { class: "fw-semibold float-start" }).text(pub.name),
                                 {% if user.is_authenticated %}
                                 $('<div>', { class: 'float-end' }).append(
-                                    // $('<div>', { class: 'form-check form-switch' }).append(
-                                    //     $checkbox
-                                    //     // $label.append(status)
-                                    // )
                                     (0 != $actionsDropdown.find('li').length) && $actionsDropdown,
                                 ),
                                 {% else %}
@@ -396,8 +381,6 @@
                         .on("mouseout", function(event) {
                             marker._icon.classList.remove('marker-pub-active');
                         });
-
-                    // Add list item to list
                     $listItem.appendTo(app.getList());
 
                     // Highlight list item on marker popup open
