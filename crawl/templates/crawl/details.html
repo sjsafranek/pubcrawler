@@ -358,6 +358,7 @@
                             (!pub.completed && _isLast) ? $removeButton : null,
                         )
                     );
+                    console.log($actionsDropdown.find('ul').length);
                     {% endif %}
                     
                     let $listItem = $("<div>", { type: "button", class: "list-group-item list-group-item-action" })
