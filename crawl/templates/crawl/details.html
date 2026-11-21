@@ -388,7 +388,7 @@
                 if (2 == app.getMap().getZoom()) {   // check for starting zoom level
                     if (allPubs.length) {
                         // app.getMap().fitBounds(L.latLngBounds($.map(allPubs, pub => [[pub.latitude, pub.longitude]])).pad(0.1));
-                        app.getMap().fitBounds(L.helpers.getLayerGroupBounds(crawlLayer).pad(0.1));
+                        app.getMap().fitBounds(L.helpers.getLayerGroupBounds(crawlLayer).pad(0.1), {'maxZoom': 16});
                     }
                 }
 
