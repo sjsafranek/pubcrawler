@@ -39,6 +39,9 @@ def buildErrorResponse(message, code=500):
         }
     }
 
+def buildNotFoundResponse():
+    return buildErrorResponse('Not Found', 404)
+
 def buildMethodNotAllowedResponse():
     return buildErrorResponse('Method Not Allowed', 405)
 
@@ -123,11 +126,11 @@ def search_pubs(request):
     geom = request.GET.get("geom")
     query = request.GET.get("query")
 
-    logger.debug(geom)
-    logger.debug(query)
-
     # Filter pubs against geometry
     pubs_gdf = getPubsWithinGeometryAsGeoDataFrame(geom)
+    if not pubs_gdf:
+        api_response = buildNotFoundResponse()
+        return JsonResponse(api_response)
     logger.debug(f"{len(pubs_gdf)} pubs found within '{geom}'")
 
     # If query is provided

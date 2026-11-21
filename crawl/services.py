@@ -41,6 +41,10 @@ def getPubsWithinGeometryAsGeoDataFrame(geom):
     pubs = [
         model_to_dict(pub) for pub in Pub.objects.filter(Q(longitude__range=(minx, maxx)) & Q(latitude__range=(miny, maxy)))
     ]
+    
+    if 0 == len(pubs):
+        return None
+
     df = pandas.DataFrame(pubs)
     bbox_gdf = makeGeoDataFrameFromDataFrame(df)
 

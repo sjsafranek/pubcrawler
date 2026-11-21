@@ -304,13 +304,14 @@
                 }
 
                 let bounds = L.rectangle(app.getMap().getCenter().toBounds(1000)).toGeoJSON();
-                API.search(geom, query)
+                API.search(bounds, query)
                     .done(response => {
                         let results = response.data.pubs;
                         for (let i=0; i<results.length; i++) {
                             console.log(results[i]);
                         }
                     });
+                    
                 // // Get users location
                 // if ("geolocation" in navigator) {
                 //     navigator.geolocation.getCurrentPosition(
