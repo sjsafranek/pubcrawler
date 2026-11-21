@@ -353,9 +353,9 @@
                     let $actionsDropdown = $('<div>', { class: 'dropdown' }).append(
                         $(`<button class="btn btn-sm btn-outline-light dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Menu</button>`),
                         $('<ul>', { class: 'dropdown-menu' }).append(
-                            !pub.completed ? $completeButton : null,
-                            pub.completed && _isLast ? $incompleteButton : null,
-                            (!pub.completed && _isLast) ? $removeButton : null,
+                            !pub.completed ? $('<li>').append($completeButton) : null,
+                            pub.completed && _isLast ? $('<li>').append($incompleteButton) : null,
+                            (!pub.completed && _isLast) ? $('<li>').append($removeButton) : null,
                         )
                     );
                     {% endif %}
