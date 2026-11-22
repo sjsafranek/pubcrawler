@@ -212,12 +212,27 @@
                 this.layers = {};
 
                 // Attach listeners
+                this.listeners = {
+                    'onrender': []
+                };
                 this.getMap().on('moveend zoomend resize', debounce(function(event) { self.renderPubLayer(); }, 1500));
                 
                 // Start
                 this.render();
             }
 
+            on(eventName, callback) {
+                this.listeners[eventName] || this.listeners[eventName] = [];
+                this.listeners[eventName].push(callback);
+            }
+
+            dispatch(eventName) {
+                if (this.listeners[eventName]) {
+                    for (let i=0; i<this.listeners[eventName].length; i++) {
+                        this.listeners[eventName][i]();
+                    }
+                }
+            }
 
             getData() {
                 return this.data;
@@ -464,6 +479,8 @@
                         this.getMap().fitBounds(bounds.pad(0.1), {'maxZoom': 17});
                     }
                 }
+
+                this.dispatch('onrender');
             }
 
 
@@ -610,6 +627,13 @@
             });
 
             app.getElement('searchInput').on('keyup', debounce(function(event) { app.searchPubsWithQuery(event); }, 1000));
+
+            app.on('onrender', function() {
+                app.getElement('searchInput').removeClass('disabled');
+                if (2 <= app.getData().filter(d => !d.completed).length) {
+                    app.getElement('searchInput').addClass('disabled');
+                }
+            });
 
             {% endif %}
             
