@@ -321,6 +321,7 @@
             }
 
             function renderDropdown(items) {
+                let $searchInput = app.getElement('searchInput');
                 let $searchResults = app.getElement('searchResults');
                 $searchResults.empty();
                 if (items.length === 0) {
