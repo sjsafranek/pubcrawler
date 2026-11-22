@@ -147,10 +147,6 @@
             });
         }
 
-        
-        // // Load pub crawl data
-        // var allPubs = JSON.parse(document.getElementById('pubs-json').textContent);
-
 
         /**
          * API 
@@ -193,7 +189,10 @@
          * App 
          */
         class App {
-            constructor() {
+            constructor(data) {
+
+                this.data = data || [];
+
                 this.map = L.map("map", {
                     doubleClickZoom: false, 
                     preferCanvas: true
@@ -208,6 +207,14 @@
                 }
 
                 this.layers = {};
+            }
+
+            getData() {
+                return this.data;
+            }
+
+            setData(data) {
+                this.data = data;
             }
 
             getMap() {
@@ -238,6 +245,42 @@
                 this.layers[name].addTo(this.getMap());
             }
 
+            /**
+             * API Handlers 
+             */
+            addPubToCrawl(pub) {
+                let self = this;
+                return API.addPubToCrawl(pub.id)
+                            .done(response => { 
+                                self.data.push(response.data.pub);
+                            })
+            }
+
+            removePubFromCrawl(pub) {
+                let self = this;
+                return API.removePubFromCrawl(pub.id)
+                            .done(response => { 
+                                self.data = self.data.filter(d => d.id != pub.id);
+                            });
+            }
+
+            markPubAsComplete(pub) {
+                let self = this;
+                return API.markPubAsComplete(pub.id)
+                            .done(response => { 
+                                let pub = self.data.filter(d => d.id == pub.id)[0];
+                                pub.completed = true;
+                            }); 
+            }
+
+            markPubAsIncomplete(pub) {
+                return API.markPubAsIncomplete(pub.id)
+                            .done(response => { 
+                                let pub = self.data.filter(d => d.id == pub.id)[0];
+                                pub.completed = false;
+                            });
+            }
+            
             /** 
              * PubLayer
              */
@@ -357,16 +400,15 @@
         // Initialize application
         $(function () {
 
-
-            // Parse the JSON data safely in JavaScript
-            var allPubs = JSON.parse(document.getElementById('pubs-json').textContent);
-            console.log(allPubs);
-
             // Full-height two-pane layout on large screens only
             if (window.matchMedia("(min-width: 992px)").matches) $(".row").first().addClass("vh-100");
 
+            // Parse the JSON data safely in JavaScript
+            var pubs = JSON.parse(document.getElementById('pubs-json').textContent);
+            console.log(pubs);
 
-            const app = new App();
+            // Initialize app
+            const app = new App(pubs);
             window.app = app;
 
 
@@ -417,10 +459,7 @@
                                     $searchResults.removeClass('show');
                                     
                                     API.addPubToCrawl(pub.id)
-                                        .done(response => { 
-                                            allPubs.push(response.data.pub);
-                                            renderCrawlLayer();
-                                        })
+                                        .them(renderCrawlLayer)
                                         .then(() => {
                                             $searchInput.val(null);
                                             $searchResults.empty();
@@ -470,44 +509,38 @@
                 app.getList().empty();
 
                 // Loop through pubs
-                $.each(allPubs, (i, pub) => {
+                let pubs = app.getData();
+                $.each(pubs, (i, pub) => {
                     // Create marker and add to 'crawlLayer'
                     const marker = App.makeCrawlPubMarker(pub);
                     marker.addTo(layer);
 
                     // Add entry to sidebar
                     let status = pub.completed ? "Complete" : "Incomplete";
-                    let _isLast = allPubs[allPubs.length - 1].id == pub.id;
+                    let _isLast = pubs[pubs.length - 1].id == pub.id;
                     let $label = $(`<label class="form-check-label" for="flexSwitchCheckDefault_${pub.id}"></label>`);
 
                     {% if user.is_authenticated %}
                     // Build menu action items
                     let $completeButton = $(`<a class="dropdown-item" href="#">Complete</a>`).on('click', function(event) {
-                        return API.markPubAsComplete(pub.id)
-                                    .done(response => { 
-                                        let pub = allPubs.filter(d => d.id == pub_id)[0];
-                                        pub.completed = true;
-                                        renderCrawlLayer();
-                                        $(`.list-group-item-action[data-pub-id="${pub_id}"]`).addClass('active');
+                        return app.markPubAsComplete(pub)
+                                    .then(renderCrawlLayer)
+                                    .then(() => {
+                                        $(`.list-group-item-action[data-pub-id="${pub.id}"]`).addClass('active');
                                     });
                     });
 
                     let $incompleteButton = $(`<a class="dropdown-item" href="#">Incomplete</a>`).on('click', function(event) {
-                        return API.markPubAsIncomplete(pub.id)
-                                    .done(response => { 
-                                        let pub = allPubs.filter(d => d.id == pub_id)[0];
-                                        pub.completed = false;
-                                        renderCrawlLayer();
-                                        $(`.list-group-item-action[data-pub-id="${pub_id}"]`).addClass('active');
+                        return app.markPubAsIncomplete(pub.id)
+                                    .then(renderCrawlLayer)
+                                    .then(() => {
+                                        $(`.list-group-item-action[data-pub-id="${pub.id}"]`).addClass('active');
                                     });
                     });
 
                     let $removeButton = $(`<a class="dropdown-item" href="#">Remove</a>`).on('click', function(event) {
-                        return API.removePubFromCrawl(pub.id)
-                                    .done(response => { 
-                                        allPubs = allPubs.filter(d => d.id != pub_id);
-                                        renderCrawlLayer();
-                                    });
+                        return app.removePubFromCrawl(pub)
+                                    .then(renderCrawlLayer);
                     });                    
 
                     let $actionsDropdown = $('<div>', { class: 'dropdown' }).append(
@@ -565,15 +598,14 @@
 
                 // Set map view
                 if (2 == app.getMap().getZoom()) {   // check for starting zoom level
-                    if (allPubs.length) {
+                    if (pubs.length) {
                         let bounds = app.getLayer('crawl').getBounds();
                         app.getMap().fitBounds(bounds.pad(0.1), {'maxZoom': 17});
                     }
                 }
 
                 // Update ui elements
-                // let n_completed = allPubs.filter(d => d.completed).length;
-                if (allPubs.length) app.setStatus(`${allPubs.length} pubs`);
+                if (pubs.length) app.setStatus(`${pubs.length} pubs`);
             }
 
             renderCrawlLayer();
