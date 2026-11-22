@@ -252,7 +252,7 @@
                 let self = this;
                 return API.addPubToCrawl(pub.id)
                             .done(response => { 
-                                self.data.push(response.data.pub);
+                                self.getData().push(response.data.pub);
                             })
             }
 
@@ -260,7 +260,7 @@
                 let self = this;
                 return API.removePubFromCrawl(pub.id)
                             .done(response => { 
-                                self.data = self.data.filter(d => d.id != pub.id);
+                                self.data = self.getData().filter(d => d.id != pub.id);
                             });
             }
 
@@ -268,16 +268,14 @@
                 let self = this;
                 return API.markPubAsComplete(pub.id)
                             .done(response => { 
-                                let pub = self.data.filter(d => d.id == pub.id)[0];
-                                pub.completed = true;
+                                self.getData().filter(d => d.id == pub.id)[0].completed = true;
                             }); 
             }
 
             markPubAsIncomplete(pub) {
                 return API.markPubAsIncomplete(pub.id)
                             .done(response => { 
-                                let pub = self.data.filter(d => d.id == pub.id)[0];
-                                pub.completed = false;
+                                self.getData().filter(d => d.id == pub.id)[0].completed = false;
                             });
             }
             
