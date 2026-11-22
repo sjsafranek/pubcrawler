@@ -117,6 +117,7 @@
     <!-- Custom Leaflet Plugins -->
     <script src="https://cdn.jsdelivr.net/gh/sjsafranek/leaflet-custom-plugins@latest/L.tileLayer.osm.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/sjsafranek/leaflet-custom-plugins@latest/L.TextIconCircleMarker.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/sjsafranek/leaflet-custom-plugins@latest/L.LayerGroup.extensions.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/sjsafranek/js-helpers@latest/utils.js"></script>
 
     {{ pubs|json_script:"pubs-json" }}
@@ -147,20 +148,35 @@
         }
 
 
-        L.helpers = L.helpers || {};
-        L.helpers.getLayerGroupBounds = function(layerGroup) {
-            const bounds = L.latLngBounds([]);
-            layerGroup.eachLayer((layer) => {
-                if (layer.getBounds) {
-                    // Handles polygons, polylines, rectangles, circles, and nested FeatureGroups
-                    bounds.extend(layer.getBounds());
-                } else if (layer.getLatLng) {
-                    // Handles markers and circleMarkers
-                    bounds.extend(layer.getLatLng());
-                }
-            });
-            return bounds;
-        }
+        // L.helpers = L.helpers || {};
+        // L.helpers.getLayerGroupBounds = function(layerGroup) {
+        //     const bounds = L.latLngBounds([]);
+        //     layerGroup.eachLayer((layer) => {
+        //         if (layer.getBounds) {
+        //             // Handles polygons, polylines, rectangles, circles, and nested FeatureGroups
+        //             bounds.extend(layer.getBounds());
+        //         } else if (layer.getLatLng) {
+        //             // Handles markers and circleMarkers
+        //             bounds.extend(layer.getLatLng());
+        //         }
+        //     });
+        //     return bounds;
+        // }
+
+        // TODO add to 'leaflet-custom-plugins'
+        // L.LayerGroup.include({
+        //     getBounds: function () {
+        //         const bounds = L.latLngBounds();
+        //         this.eachLayer(function (layer) {
+        //             if (typeof layer.getBounds === 'function') {
+        //                 bounds.extend(layer.getBounds());
+        //             } else if (typeof layer.getLatLng === 'function') {
+        //                 bounds.extend(layer.getLatLng());
+        //             }
+        //         });
+        //         return bounds;
+        //     }
+        // });
 
 
         class App {
@@ -382,7 +398,7 @@
              */
             app.getMap().createPane('crawlPane');
             app.getMap().getPane('crawlPane').style.zIndex = 420;
-            const crawlLayer = L.layerGroup().addTo(app.map);
+            app.addLayer('crawl', L.layerGroup());
 
             function makeCrawlPubMarker(i, pub) {
                 let icon = !pub.completed ? createPubPendingIcon(i+1) : createPubCompletedIcon(i+1)
@@ -411,14 +427,15 @@
             function renderCrawlLayer() {
                 // Reset ui elements and map layers
                 app.setStatus(`Loading...`);
-                crawlLayer.clearLayers();
+                let layer = app.getLayer('crawl');
+                layer.clearLayers();
                 app.getList().empty();
 
                 // Loop through pubs
                 $.each(allPubs, (i, pub) => {
                     // Create marker and add to 'crawlLayer'
                     const marker = makeCrawlPubMarker(i, pub);
-                    marker.addTo(crawlLayer);
+                    marker.addTo(layer);
 
                     // Add entry to sidebar
                     let status = pub.completed ? "Complete" : "Incomplete";
@@ -495,7 +512,8 @@
                 // Set map view
                 if (2 == app.getMap().getZoom()) {   // check for starting zoom level
                     if (allPubs.length) {
-                        app.getMap().fitBounds(L.helpers.getLayerGroupBounds(crawlLayer).pad(0.1), {'maxZoom': 17});
+                        let bounds = app.getLayer('crawl');
+                        app.getMap().fitBounds(bounds.pad(0.1), {'maxZoom': 17});
                     }
                 }
 
@@ -563,14 +581,12 @@
                 });
             }
 
-            // var pubLayer = null;
+
             function renderPubLayer() {
                 let bounds = L.rectangle(app.getMap().getBounds()).toGeoJSON();
                 API.search(bounds)
                     .done(data => {
-                        // pubLayer && pubLayer.remove();
                         let pubLayer = makePubLayer(data.data.layer);
-                        // pubLayer.addTo(app.getMap());
                         app.addLayer('pubs', pubLayer);
                     });
             }
