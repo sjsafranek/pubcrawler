@@ -185,10 +185,52 @@
 
 
 
+        class EventEmitter {
+            constructor() {
+                this.events = new Map();
+            }
+
+            // Subscribe to an event
+            on(eventName, listener) {
+                if (!this.events.has(eventName)) {
+                this.events.set(eventName, new Set());
+                }
+                this.events.get(eventName).add(listener);
+                return this; // Enables method chaining
+            }
+
+            // Unsubscribe from an event
+            off(eventName, listener) {
+                if (this.events.has(eventName)) {
+                    this.events.get(eventName).delete(listener);
+                }
+                return this;
+            }
+
+            // Subscribe to an event only once
+            once(eventName, listener) {
+                const wrapper = (...args) => {
+                    this.off(eventName, wrapper);
+                    listener(...args);
+                };
+                return this.on(eventName, wrapper);
+            }
+
+            // Trigger an event
+            emit(eventName, ...args) {
+                if (!this.events.has(eventName)) return false;
+                for (const listener of this.events.get(eventName)) {
+                    listener(...args);
+                }
+                return true;
+            }
+        }
+
+
         /**
          * App 
          */
-        class App {
+        class App extends EventEmitter {
             constructor(data) {
                 let self = this;
 
@@ -212,26 +254,10 @@
                 this.layers = {};
 
                 // Attach listeners
-                this.listeners = {
-                    'onrender': []
-                };
                 this.getMap().on('moveend zoomend resize', debounce(function(event) { self.renderPubLayer(); }, 1500));
                 
                 // Start
                 this.render();
-            }
-
-            on(eventName, callback) {
-                this.listeners[eventName] || this.listeners[eventName] = [];
-                this.listeners[eventName].push(callback);
-            }
-
-            dispatch(eventName) {
-                if (this.listeners[eventName]) {
-                    for (let i=0; i<this.listeners[eventName].length; i++) {
-                        this.listeners[eventName][i]();
-                    }
-                }
             }
 
             getData() {
@@ -480,7 +506,7 @@
                     }
                 }
 
-                this.dispatch('onrender');
+                this.emit('onrender');
             }
 
 
