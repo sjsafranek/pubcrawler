@@ -305,6 +305,7 @@
             app.elements.$searchResults = $('#searchResults');
 
             function searchPubs(event) {
+                console.log('searchPubs', events);
                 let $searchInput = app.getElement('searchInput');
                 let $searchResults = app.getElement('searchResults');
                 let query = $searchInput.val().trim();
@@ -329,6 +330,7 @@
                     $searchResults[0].innerHTML = '<li><span class="dropdown-item-text text-muted">No results found</span></li>';
                 } else {
                     items.forEach(pub => {
+                        console.log('renderDropdown', pub);
                         const li = document.createElement('li');
                         const a = document.createElement('a');
                         a.className = 'dropdown-item';
@@ -359,7 +361,7 @@
                 }
             });
 
-            app.getElement('searchResults').on('keyup', debounce(searchPubs, 1500));
+            app.getElement('searchResults').on('keyup', debounce(searchPubs, 1000));
 
             {% endif %}
 
