@@ -276,7 +276,7 @@
 
 
             const API = {
-                crawl_id: {{ crawl.id }},
+                crawlId: {{ crawl.id }},
 
                 search: function(geom, query) {
                     let geomString = encodeURIComponent(JSON.stringify(geom));
@@ -291,7 +291,7 @@
             {% if user.is_authenticated %}
 
             API.addPubToCrawl = function(pub_id) {
-                return $.getJSON(`/api/v1/crawl/${API.crawl_id}/pub/${pub_id}/add`)
+                return $.getJSON(`/api/v1/crawl/${API.crawlId}/pub/${pub_id}/add`)
                     .done(response => { 
                         allPubs.push(response.data.pub);
                         renderCrawlLayer();
@@ -299,7 +299,7 @@
             }
 
             API.removePubFromCrawl = function(pub_id) {
-                return $.getJSON(`/api/v1/crawl/${crawl_id}/pub/${pub_id}/remove`)
+                return $.getJSON(`/api/v1/crawl/${API.crawlId}/pub/${pub_id}/remove`)
                     .done(response => { 
                         allPubs = allPubs.filter(d => d.id != pub_id);
                         renderCrawlLayer();
@@ -307,7 +307,7 @@
             }
 
             API.markPubAsComplete = function(pub_id) {
-                return $.getJSON(`/api/v1/crawl/${API.crawl_id}/pub/${pub_id}/complete`)
+                return $.getJSON(`/api/v1/crawl/${API.crawlId}/pub/${pub_id}/complete`)
                     .done(response => { 
                         let pub = allPubs.filter(d => d.id == pub_id)[0];
                         pub.completed = true;
@@ -317,7 +317,7 @@
             }
 
             API.markPubAsIncomplete = function(pub_id) {
-                return $.getJSON(`/api/v1/crawl/${API.crawl_id}/pub/${pub_id}/incomplete`)
+                return $.getJSON(`/api/v1/crawl/${API.crawlId}/pub/${pub_id}/incomplete`)
                     .done(response => { 
                         let pub = allPubs.filter(d => d.id == pub_id)[0];
                         pub.completed = false;
