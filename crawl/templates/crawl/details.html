@@ -363,7 +363,8 @@
                         const a = document.createElement('a');
                         a.className = 'dropdown-item';
                         a.href = '#';
-                        a.textContent = pub.name;
+                        // a.textContent = pub.name;
+                        a.textContent = [pub.name, `${pub.address_street_number} ${pub.address_street_name}`].join(" · ")
                         
                         // Handle item selection
                         a.addEventListener('click', (e) => {
