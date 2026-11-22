@@ -512,9 +512,8 @@
                 // Set map view
                 if (2 == app.getMap().getZoom()) {   // check for starting zoom level
                     if (allPubs.length) {
-                        let bounds = app.getLayer('crawl');
-                        // app.getMap().fitBounds(bounds.pad(0.1), {'maxZoom': 17});
-                        app.getMap().fitBounds(bounds, {'maxZoom': 17});
+                        let bounds = app.getLayer('crawl').getBounds();
+                        app.getMap().fitBounds(bounds.pad(0.1), {'maxZoom': 17});
                     }
                 }
 
