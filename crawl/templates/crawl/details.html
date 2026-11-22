@@ -654,10 +654,10 @@
             app.getElement('searchInput').on('keyup', debounce(function(event) { app.searchPubsWithQuery(event); }, 1000));
 
             app.on('onrender', function() {
-                app.getElement('searchInput').prop('disabled', false);
-                if (2 <= app.getData().filter(d => !d.completed).length) {
-                    app.getElement('searchInput').prop('disabled', true);
-                }
+                let disabled = (2 <= app.getData().filter(d => !d.completed).length);
+                let $searchInput = app.getElement('searchInput');
+                $searchInput.prop('disabled', disabled);
+                $searchInput.attr('placeholder', disabled ? 'Please complete existing pubs' : 'Search pubs...')
             });
 
             {% endif %}
