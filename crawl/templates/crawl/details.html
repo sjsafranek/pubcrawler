@@ -105,6 +105,7 @@
     <script src="https://cdn.jsdelivr.net/gh/sjsafranek/leaflet-custom-plugins@main/L.tileLayer.osm.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/sjsafranek/leaflet-custom-plugins@main/L.TextIconCircleMarker.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/sjsafranek/leaflet-custom-plugins@main/L.LayerGroup.extensions.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/sjsafranek/leaflet-custom-plugins@main/L.Bounds.extensions.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/sjsafranek/js-helpers@main/event-emitter.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/sjsafranek/js-helpers@main/utils.js"></script>
 
@@ -137,25 +138,25 @@
         }
 
 
-/**
- * Expands a Leaflet LatLngBounds by a given distance in meters.
- * @param {L.LatLngBounds} bounds - The original Leaflet bounds
- * @param {number} meters - The buffer distance in meters
- * @returns {L.LatLngBounds} A new, expanded LatLngBounds object
- */
-function bufferBoundsByMeters(bounds, meters) {
-  const sw = bounds.getSouthWest();
-  const ne = bounds.getNorthEast();
+// /**
+//  * Expands a Leaflet LatLngBounds by a given distance in meters.
+//  * @param {L.LatLngBounds} bounds - The original Leaflet bounds
+//  * @param {number} meters - The buffer distance in meters
+//  * @returns {L.LatLngBounds} A new, expanded LatLngBounds object
+//  */
+// function bufferBoundsByMeters(bounds, meters) {
+//   const sw = bounds.getSouthWest();
+//   const ne = bounds.getNorthEast();
 
-  // toBounds takes the full width/height of the box, so multiply by 2
-  const swBuffer = sw.toBounds(meters * 2);
-  const neBuffer = ne.toBounds(meters * 2);
+//   // toBounds takes the full width/height of the box, so multiply by 2
+//   const swBuffer = sw.toBounds(meters * 2);
+//   const neBuffer = ne.toBounds(meters * 2);
 
-  return L.latLngBounds(
-    swBuffer.getSouthWest(),
-    neBuffer.getNorthEast()
-  );
-}
+//   return L.latLngBounds(
+//     swBuffer.getSouthWest(),
+//     neBuffer.getNorthEast()
+//   );
+// }
 
 
 
@@ -587,10 +588,8 @@ function bufferBoundsByMeters(bounds, meters) {
                 }
 
                 let bounds = app.getLayer('crawl').getBounds();
-                let buffer = bufferBoundsByMeters(bounds, 2500);
-                let area = L.rectangle(buffer).toGeoJSON();
-                // let bounds = L.rectangle(app.getLayer('crawl').toBounds(2500)).toGeoJSON();
-                // let bounds = L.rectangle(app.getMap().getCenter().toBounds(1000)).toGeoJSON();
+                let buffer = bounds.buffer(2500);
+                let area = L.rectangle(buffer).toGeoJSON();;
                 this.getApi()
                     .search(area, query)
                     .done(response => {
