@@ -633,8 +633,7 @@
             // }
 
             app.getMap().on('moveend zoomend resize', debounce(function(event) { app.renderPubLayer(); }, 1500));
-
-            renderPubLayer();
+            app.renderPubLayer();
 
 
             // // Draw walking path
