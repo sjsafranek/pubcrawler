@@ -195,6 +195,7 @@
                 this.layers[name].addTo(this.getMap());
             }
 
+            // Make marker for craw pub
             static makeCrawlPubMarker(pub) {
                 let icon = !pub.completed ? createPubPendingIcon(pub.position) : createPubCompletedIcon(pub.position)
                 let marker = L.marker([pub.latitude, pub.longitude], { 
@@ -471,7 +472,7 @@
                 // Loop through pubs
                 $.each(allPubs, (i, pub) => {
                     // Create marker and add to 'crawlLayer'
-                    const marker = app.makeCrawlPubMarker(pub);
+                    const marker = App.makeCrawlPubMarker(pub);
                     marker.addTo(layer);
 
                     // Add entry to sidebar
