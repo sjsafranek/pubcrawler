@@ -529,7 +529,7 @@
                     });
 
                     let $incompleteButton = $(`<a class="dropdown-item" href="#">Incomplete</a>`).on('click', function(event) {
-                        return app.markPubAsIncomplete(pub.id)
+                        return app.markPubAsIncomplete(pub)
                                     .then(renderCrawlLayer)
                                     .then(() => {
                                         $(`.list-group-item-action[data-pub-id="${pub.id}"]`).addClass('active');
