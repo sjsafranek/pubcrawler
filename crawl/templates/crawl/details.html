@@ -273,6 +273,7 @@
             }
 
             markPubAsIncomplete(pub) {
+                let self = this;
                 return API.markPubAsIncomplete(pub.id)
                             .done(response => { 
                                 self.getData().filter(d => d.id == pub.id)[0].completed = false;
