@@ -171,19 +171,19 @@
         
         {% if user.is_authenticated %}
 
-        Api.prototype.addPubToCrawl(pub_id) {
+        Api.prototype.addPubToCrawl = function(pub_id) {
             return $.getJSON(`/api/v1/crawl/${this.crawlId}/pub/${pub_id}/add`);
         }
 
-        Api.prototype.removePubFromCrawl(pub_id) {
+        Api.prototype.removePubFromCrawl = function(pub_id) {
             return $.getJSON(`/api/v1/crawl/${this.crawlId}/pub/${pub_id}/remove`);
         }
 
-        Api.prototype.markPubAsComplete(pub_id) {
+        Api.prototype.markPubAsComplete = function(pub_id) {
             return $.getJSON(`/api/v1/crawl/${this.crawlId}/pub/${pub_id}/complete`);
         }
 
-        Api.prototype.markPubAsIncomplete(pub_id) {
+        Api.prototype.markPubAsIncomplete = function(pub_id) {
             return $.getJSON(`/api/v1/crawl/${this.crawlId}/pub/${pub_id}/incomplete`);
         }
 
