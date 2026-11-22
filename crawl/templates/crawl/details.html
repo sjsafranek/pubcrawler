@@ -147,6 +147,10 @@
             });
         }
 
+        
+        // // Load pub crawl data
+        // var allPubs = JSON.parse(document.getElementById('pubs-json').textContent);
+
 
         /**
          * API 
@@ -166,39 +170,19 @@
         {% if user.is_authenticated %}
 
         API.addPubToCrawl = function(pub_id) {
-            return $.getJSON(`/api/v1/crawl/${API.crawlId}/pub/${pub_id}/add`)
-                .done(response => { 
-                    allPubs.push(response.data.pub);
-                    renderCrawlLayer();
-                });
+            return $.getJSON(`/api/v1/crawl/${API.crawlId}/pub/${pub_id}/add`);
         }
 
         API.removePubFromCrawl = function(pub_id) {
-            return $.getJSON(`/api/v1/crawl/${API.crawlId}/pub/${pub_id}/remove`)
-                .done(response => { 
-                    allPubs = allPubs.filter(d => d.id != pub_id);
-                    renderCrawlLayer();
-                });
+            return $.getJSON(`/api/v1/crawl/${API.crawlId}/pub/${pub_id}/remove`);
         }
 
         API.markPubAsComplete = function(pub_id) {
-            return $.getJSON(`/api/v1/crawl/${API.crawlId}/pub/${pub_id}/complete`)
-                .done(response => { 
-                    let pub = allPubs.filter(d => d.id == pub_id)[0];
-                    pub.completed = true;
-                    renderCrawlLayer();
-                    $(`.list-group-item-action[data-pub-id="${pub_id}"]`).addClass('active');
-                });
+            return $.getJSON(`/api/v1/crawl/${API.crawlId}/pub/${pub_id}/complete`);
         }
 
         API.markPubAsIncomplete = function(pub_id) {
-            return $.getJSON(`/api/v1/crawl/${API.crawlId}/pub/${pub_id}/incomplete`)
-                .done(response => { 
-                    let pub = allPubs.filter(d => d.id == pub_id)[0];
-                    pub.completed = false;
-                    renderCrawlLayer();
-                    $(`.list-group-item-action[data-pub-id="${pub_id}"]`).addClass('active');
-                });
+            return $.getJSON(`/api/v1/crawl/${API.crawlId}/pub/${pub_id}/incomplete`);
         }
 
         {% endif %}
@@ -307,7 +291,7 @@
                 API.search(bounds)
                     .done(data => {
                         let pubLayer = self._makePubLayer(data.data.layer);
-                        app.addLayer('pubs', pubLayer);
+                        self.addLayer('pubs', pubLayer);
                     });
             }
 
@@ -386,8 +370,6 @@
             window.app = app;
 
 
-          
-
             {% if user.is_authenticated %}
 
             /**
@@ -433,7 +415,12 @@
                                     event.preventDefault();
                                     $searchInput.get(0).value = pub.name;
                                     $searchResults.removeClass('show');
+                                    
                                     API.addPubToCrawl(pub.id)
+                                        .done(response => { 
+                                            allPubs.push(response.data.pub);
+                                            renderCrawlLayer();
+                                        });
                                         .then(() => {
                                             $searchInput.val(null);
                                             $searchResults.empty();
@@ -496,15 +483,31 @@
                     {% if user.is_authenticated %}
                     // Build menu action items
                     let $completeButton = $(`<a class="dropdown-item" href="#">Complete</a>`).on('click', function(event) {
-                        return API.markPubAsComplete(pub.id);
+                        return API.markPubAsComplete(pub.id)
+                                    .done(response => { 
+                                        let pub = allPubs.filter(d => d.id == pub_id)[0];
+                                        pub.completed = true;
+                                        renderCrawlLayer();
+                                        $(`.list-group-item-action[data-pub-id="${pub_id}"]`).addClass('active');
+                                    });
                     });
 
                     let $incompleteButton = $(`<a class="dropdown-item" href="#">Incomplete</a>`).on('click', function(event) {
-                        return API.markPubAsIncomplete(pub.id);
+                        return API.markPubAsIncomplete(pub.id)
+                                    .done(response => { 
+                                        let pub = allPubs.filter(d => d.id == pub_id)[0];
+                                        pub.completed = false;
+                                        renderCrawlLayer();
+                                        $(`.list-group-item-action[data-pub-id="${pub_id}"]`).addClass('active');
+                                    });
                     });
 
                     let $removeButton = $(`<a class="dropdown-item" href="#">Remove</a>`).on('click', function(event) {
-                        return API.removePubFromCrawl(pub.id);
+                        return API.removePubFromCrawl(pub.id)
+                                    .done(response => { 
+                                        allPubs = allPubs.filter(d => d.id != pub_id);
+                                        renderCrawlLayer();
+                                    });
                     });                    
 
                     let $actionsDropdown = $('<div>', { class: 'dropdown' }).append(
