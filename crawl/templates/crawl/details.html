@@ -119,6 +119,7 @@
     <script src="https://cdn.jsdelivr.net/gh/sjsafranek/leaflet-custom-plugins@main/L.tileLayer.osm.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/sjsafranek/leaflet-custom-plugins@main/L.TextIconCircleMarker.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/sjsafranek/leaflet-custom-plugins@main/L.LayerGroup.extensions.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/sjsafranek/js-helpers@main/event-emitter.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/sjsafranek/js-helpers@main/utils.js"></script>
 
     {{ pubs|json_script:"pubs-json" }}
@@ -183,50 +184,6 @@
         }
 
         {% endif %}
-
-
-
-        class EventEmitter {
-            constructor() {
-                this.events = new Map();
-            }
-
-            // Subscribe to an event
-            on(eventName, listener) {
-                if (!this.events.has(eventName)) {
-                this.events.set(eventName, new Set());
-                }
-                this.events.get(eventName).add(listener);
-                return this; // Enables method chaining
-            }
-
-            // Unsubscribe from an event
-            off(eventName, listener) {
-                if (this.events.has(eventName)) {
-                    this.events.get(eventName).delete(listener);
-                }
-                return this;
-            }
-
-            // Subscribe to an event only once
-            once(eventName, listener) {
-                const wrapper = (...args) => {
-                    this.off(eventName, wrapper);
-                    listener(...args);
-                };
-                return this.on(eventName, wrapper);
-            }
-
-            // Trigger an event
-            emit(eventName, ...args) {
-                if (!this.events.has(eventName)) return false;
-                for (const listener of this.events.get(eventName)) {
-                    listener(...args);
-                }
-                return true;
-            }
-        }
-
 
         /**
          * App 
