@@ -420,7 +420,7 @@
                                         .done(response => { 
                                             allPubs.push(response.data.pub);
                                             renderCrawlLayer();
-                                        });
+                                        })
                                         .then(() => {
                                             $searchInput.val(null);
                                             $searchResults.empty();
