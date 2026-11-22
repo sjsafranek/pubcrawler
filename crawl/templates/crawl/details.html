@@ -213,7 +213,9 @@
 
                 // Attach listeners
                 this.getMap().on('moveend zoomend resize', debounce(function(event) { self.renderPubLayer(); }, 1500));
-                //this.renderPubLayer();
+                
+                // Start
+                this.render();
             }
 
 
@@ -233,11 +235,11 @@
                 return this.elements.$list;
             }
 
-            setStatus(text, isError = false) {
-                this.getElement('status').text(text)
-                    .toggleClass("text-danger", isError)
-                    .toggleClass("text-body-secondary", !isError);
-            }
+            // setStatus(text, isError = false) {
+            //     this.getElement('status').text(text)
+            //         .toggleClass("text-danger", isError)
+            //         .toggleClass("text-body-secondary", !isError);
+            // }
 
             getElement(name) {
                 return this.elements[`$${name}`];
@@ -262,6 +264,7 @@
                             .done(response => { 
                                 self.getData().push(response.data.pub);
                             })
+                            .then(() => { self.render(); });
             }
 
             removePubFromCrawl(pub) {
@@ -269,7 +272,8 @@
                 return API.removePubFromCrawl(pub.id)
                             .done(response => { 
                                 self.data = self.getData().filter(d => d.id != pub.id);
-                            });
+                            })
+                            .then(() => { self.render(); });
             }
 
             markPubAsComplete(pub) {
@@ -277,7 +281,8 @@
                 return API.markPubAsComplete(pub.id)
                             .done(response => { 
                                 self.getData().filter(d => d.id == pub.id)[0].completed = true;
-                            }); 
+                            })
+                            .then(() => { self.render(); });
             }
 
             markPubAsIncomplete(pub) {
@@ -285,7 +290,8 @@
                 return API.markPubAsIncomplete(pub.id)
                             .done(response => { 
                                 self.getData().filter(d => d.id == pub.id)[0].completed = false;
-                            });
+                            })
+                            .then(() => { self.render(); });
             }
             
             /** 
@@ -344,6 +350,122 @@
                         self.addLayer('pubs', pubLayer);
                     });
             }
+
+            /** 
+             * CrawlLayer
+             */
+            render() {
+                let self = this;
+                // Create new layer pane if needed
+                if (!this.getMap().getPane('crawlPane')) {
+                    this.getMap().createPane('crawlPane');
+                    this.getMap().getPane('crawlPane').style.zIndex = 420;
+                }
+
+                // Create new layer if needed
+                if (!this.getLayer('crawl')) {
+                    this.addLayer('crawl', L.layerGroup());
+                }
+
+                // Reset ui elements and map layers
+                let layer = this.getLayer('crawl');
+                layer.clearLayers();
+                this.getList().empty();
+
+                // Loop through pubs
+                let pubs = this.getData();
+                $.each(pubs, (i, pub) => {
+                    // Create marker and add to 'crawlLayer'
+                    const marker = App.makeCrawlPubMarker(pub);
+                    marker.addTo(layer);
+
+                    // Add entry to sidebar
+                    let status = pub.completed ? "Complete" : "Incomplete";
+                    let _isLast = pubs[pubs.length - 1].id == pub.id;
+                    let $label = $(`<label class="form-check-label" for="flexSwitchCheckDefault_${pub.id}"></label>`);
+
+                    {% if user.is_authenticated %}
+                    // Build menu action items
+                    let $completeButton = $(`<a class="dropdown-item" href="#">Complete</a>`).on('click', function(event) {
+                        return self.markPubAsComplete(pub)
+                                    .then(() => {
+                                        $(`.list-group-item-action[data-pub-id="${pub.id}"]`).addClass('active');
+                                    });
+                    });
+
+                    let $incompleteButton = $(`<a class="dropdown-item" href="#">Incomplete</a>`).on('click', function(event) {
+                        return self.markPubAsIncomplete(pub)
+                                    .then(() => {
+                                        $(`.list-group-item-action[data-pub-id="${pub.id}"]`).addClass('active');
+                                    });
+                    });
+
+                    let $removeButton = $(`<a class="dropdown-item" href="#">Remove</a>`).on('click', function(event) {
+                        return self.removePubFromCrawl(pub);
+                    });                    
+
+                    let $actionsDropdown = $('<div>', { class: 'dropdown' }).append(
+                        $(`<button class="btn btn-sm btn-outline-light dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Menu</button>`),
+                        $('<ul>', { class: 'dropdown-menu' }).append(
+                            !pub.completed ? $('<li>').append($completeButton) : null,
+                            pub.completed && _isLast ? $('<li>').append($incompleteButton) : null,
+                            (!pub.completed && _isLast) ? $('<li>').append($removeButton) : null,
+                        )
+                    );
+                    {% endif %}
+                    
+                    // Create list item for sidebar
+                    let $listItem = $("<div>", { type: "button", class: "list-group-item list-group-item-action" })
+                        .attr({'data-pub-id': pub.id})
+                        .append(
+                            $("<div>", {class: 'clearfix'}).append(
+                                $("<div>", { class: "fw-semibold float-start" }).text(pub.name),
+                                {% if user.is_authenticated %}
+                                $('<div>', { class: 'float-end' }).append(
+                                    (0 != $actionsDropdown.find('li').length) && $actionsDropdown,
+                                ),
+                                {% else %}
+                                $('<div>', { class: 'float-end' }).append(status)
+                                {% endif %}
+                            )
+                        )
+                        .append(
+                            $("<div>", { class: "small text-body-secondary" })
+                                .text(
+                                    [pub.subtype, `${pub.address_street_number} ${pub.address_street_name}`].filter(Boolean).join(" · ")
+                                )
+                        )
+                        .on("click", function(event) {
+                            self.getList().children(".active").removeClass("active");
+                            $(this).addClass("active");
+                            self.getMap().setView([pub.latitude, pub.longitude], Math.max(self.getMap().getZoom(), 17));
+                            marker.openPopup();
+                        })
+                        .on("mouseover", function(event) {
+                            marker._icon.classList.add('marker-pub-active');
+                        })
+                        .on("mouseout", function(event) {
+                            marker._icon.classList.remove('marker-pub-active');
+                        });
+                    $listItem.appendTo(self.getList());
+
+                    // Highlight list item on marker popup open
+                    marker.on('popupopen', function (event) {
+                        $('.list-group-item-action').removeClass('active');
+                        $listItem.addClass('active');
+                    });
+
+                });
+
+                // Set map view
+                if (2 == this.getMap().getZoom()) {   // check for starting zoom level
+                    if (pubs.length) {
+                        let bounds = this.getLayer('crawl').getBounds();
+                        this.getMap().fitBounds(bounds.pad(0.1), {'maxZoom': 17});
+                    }
+                }
+            }
+
 
             // Make marker for craw pub
             static makeCrawlPubMarker(pub) {
@@ -466,7 +588,6 @@
                                     $searchResults.removeClass('show');
                                     
                                     app.addPubToCrawl(pub)
-                                        .then(renderCrawlLayer)
                                         .then(() => {
                                             $searchInput.val(null);
                                             $searchResults.empty();
@@ -491,131 +612,7 @@
             app.getElement('searchInput').on('keyup', debounce(function(event) { app.searchPubsWithQuery(event); }, 1000));
 
             {% endif %}
-
-
-            /**
-             * CrawlLayer
-             */
-
-            function renderCrawlLayer() {
-                // Create new layer pane if needed
-                if (!app.getMap().getPane('crawlPane')) {
-                    app.getMap().createPane('crawlPane');
-                    app.getMap().getPane('crawlPane').style.zIndex = 420;
-                }
-
-                // Create new layer if needed
-                if (!app.getLayer('crawl')) {
-                    app.addLayer('crawl', L.layerGroup());
-                }
-
-                // Reset ui elements and map layers
-                app.setStatus(`Loading...`);
-                let layer = app.getLayer('crawl');
-                layer.clearLayers();
-                app.getList().empty();
-
-                // Loop through pubs
-                let pubs = app.getData();
-                $.each(pubs, (i, pub) => {
-                    // Create marker and add to 'crawlLayer'
-                    const marker = App.makeCrawlPubMarker(pub);
-                    marker.addTo(layer);
-
-                    // Add entry to sidebar
-                    let status = pub.completed ? "Complete" : "Incomplete";
-                    let _isLast = pubs[pubs.length - 1].id == pub.id;
-                    let $label = $(`<label class="form-check-label" for="flexSwitchCheckDefault_${pub.id}"></label>`);
-
-                    {% if user.is_authenticated %}
-                    // Build menu action items
-                    let $completeButton = $(`<a class="dropdown-item" href="#">Complete</a>`).on('click', function(event) {
-                        return app.markPubAsComplete(pub)
-                                    .then(renderCrawlLayer)
-                                    .then(() => {
-                                        $(`.list-group-item-action[data-pub-id="${pub.id}"]`).addClass('active');
-                                    });
-                    });
-
-                    let $incompleteButton = $(`<a class="dropdown-item" href="#">Incomplete</a>`).on('click', function(event) {
-                        return app.markPubAsIncomplete(pub)
-                                    .then(renderCrawlLayer)
-                                    .then(() => {
-                                        $(`.list-group-item-action[data-pub-id="${pub.id}"]`).addClass('active');
-                                    });
-                    });
-
-                    let $removeButton = $(`<a class="dropdown-item" href="#">Remove</a>`).on('click', function(event) {
-                        return app.removePubFromCrawl(pub)
-                                    .then(renderCrawlLayer);
-                    });                    
-
-                    let $actionsDropdown = $('<div>', { class: 'dropdown' }).append(
-                        $(`<button class="btn btn-sm btn-outline-light dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Menu</button>`),
-                        $('<ul>', { class: 'dropdown-menu' }).append(
-                            !pub.completed ? $('<li>').append($completeButton) : null,
-                            pub.completed && _isLast ? $('<li>').append($incompleteButton) : null,
-                            (!pub.completed && _isLast) ? $('<li>').append($removeButton) : null,
-                        )
-                    );
-                    {% endif %}
-                    
-                    // Create list item for sidebar
-                    let $listItem = $("<div>", { type: "button", class: "list-group-item list-group-item-action" })
-                        .attr({'data-pub-id': pub.id})
-                        .append(
-                            $("<div>", {class: 'clearfix'}).append(
-                                $("<div>", { class: "fw-semibold float-start" }).text(pub.name),
-                                {% if user.is_authenticated %}
-                                $('<div>', { class: 'float-end' }).append(
-                                    (0 != $actionsDropdown.find('li').length) && $actionsDropdown,
-                                ),
-                                {% else %}
-                                $('<div>', { class: 'float-end' }).append(status)
-                                {% endif %}
-                            )
-                        )
-                        .append(
-                            $("<div>", { class: "small text-body-secondary" })
-                                .text(
-                                    [pub.subtype, `${pub.address_street_number} ${pub.address_street_name}`].filter(Boolean).join(" · ")
-                                )
-                        )
-                        .on("click", function(event) {
-                            app.getList().children(".active").removeClass("active");
-                            $(this).addClass("active");
-                            app.getMap().setView([pub.latitude, pub.longitude], Math.max(app.getMap().getZoom(), 17));
-                            marker.openPopup();
-                        })
-                        .on("mouseover", function(event) {
-                            marker._icon.classList.add('marker-pub-active');
-                        })
-                        .on("mouseout", function(event) {
-                            marker._icon.classList.remove('marker-pub-active');
-                        });
-                    $listItem.appendTo(app.getList());
-
-                    // Highlight list item on marker popup open
-                    marker.on('popupopen', function (event) {
-                        $('.list-group-item-action').removeClass('active');
-                        $listItem.addClass('active');
-                    });
-
-                });
-
-                // Set map view
-                if (2 == app.getMap().getZoom()) {   // check for starting zoom level
-                    if (pubs.length) {
-                        let bounds = app.getLayer('crawl').getBounds();
-                        app.getMap().fitBounds(bounds.pad(0.1), {'maxZoom': 17});
-                    }
-                }
-
-                // Update ui elements
-                if (pubs.length) app.setStatus(`${pubs.length} pubs`);
-            }
-
-            renderCrawlLayer();
+            
 
         });
 
