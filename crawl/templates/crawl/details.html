@@ -177,6 +177,8 @@
                     $status: $("#status"), 
                     $list: $("#list")
                 }
+
+                this.layers = {};
             }
 
             getMap() {
@@ -195,6 +197,16 @@
 
             getElement(name) {
                 return this.elements[`$${name}`];
+            }
+
+            getLayer(name) {
+                return this.layers[name];
+            }
+
+            addLayer(name, layer) {
+                this.layers[name] && this.layers[name].remove();
+                this.layers[name] = layer;
+                this.layers[name].addTo(this.getMap());
             }
         }
 
@@ -248,6 +260,8 @@
 
 
             const API = {
+                crawl_id: {{ crawl.id }},
+
                 search: function(geom, query) {
                     let geomString = encodeURIComponent(JSON.stringify(geom));
                     if (!query)
@@ -259,43 +273,41 @@
 
 
             {% if user.is_authenticated %}
-            /** 
-             * AdminAPI
-             */
-            let crawl_id = {{ crawl.id }};
-            const AdminAPI = {
-                add: function(pub_id) {
-                    $.getJSON(`/api/v1/crawl/${crawl_id}/pub/${pub_id}/add`)
-                        .done(response => { 
-                            allPubs.push(response.data.pub);
-                            renderCrawlLayer();
-                        });
-                },
-                remove: function(pub_id) {
-                    $.getJSON(`/api/v1/crawl/${crawl_id}/pub/${pub_id}/remove`)
-                        .done(response => { 
-                            allPubs = allPubs.filter(d => d.id != pub_id);
-                            renderCrawlLayer();
-                        });
-                },
-                complete: function(pub_id) {
-                    $.getJSON(`/api/v1/crawl/${crawl_id}/pub/${pub_id}/complete`)
-                        .done(response => { 
-                            let pub = allPubs.filter(d => d.id == pub_id)[0];
-                            pub.completed = true;
-                            renderCrawlLayer();
-                            $(`.list-group-item-action[data-pub-id="${pub_id}"]`).addClass('active');
-                        });
-                },
-                incomplete: function(pub_id) {
-                    $.getJSON(`/api/v1/crawl/${crawl_id}/pub/${pub_id}/incomplete`)
-                        .done(response => { 
-                            let pub = allPubs.filter(d => d.id == pub_id)[0];
-                            pub.completed = false;
-                            renderCrawlLayer();
-                            $(`.list-group-item-action[data-pub-id="${pub_id}"]`).addClass('active');
-                        });
-                }
+
+            API.addPubToCrawl = function(pub_id) {
+                return $.getJSON(`/api/v1/crawl/${API.crawl_id}/pub/${pub_id}/add`)
+                    .done(response => { 
+                        allPubs.push(response.data.pub);
+                        renderCrawlLayer();
+                    });
+            }
+
+            API.removePubFromCrawl = function(pub_id) {
+                return $.getJSON(`/api/v1/crawl/${crawl_id}/pub/${pub_id}/remove`)
+                    .done(response => { 
+                        allPubs = allPubs.filter(d => d.id != pub_id);
+                        renderCrawlLayer();
+                    });
+            }
+
+            API.markPubAsComplete = function(pub_id) {
+                return $.getJSON(`/api/v1/crawl/${API.crawl_id}/pub/${pub_id}/complete`)
+                    .done(response => { 
+                        let pub = allPubs.filter(d => d.id == pub_id)[0];
+                        pub.completed = true;
+                        renderCrawlLayer();
+                        $(`.list-group-item-action[data-pub-id="${pub_id}"]`).addClass('active');
+                    });
+            }
+
+            API.markPubAsIncomplete = function(pub_id) {
+                return $.getJSON(`/api/v1/crawl/${API.crawl_id}/pub/${pub_id}/incomplete`)
+                    .done(response => { 
+                        let pub = allPubs.filter(d => d.id == pub_id)[0];
+                        pub.completed = false;
+                        renderCrawlLayer();
+                        $(`.list-group-item-action[data-pub-id="${pub_id}"]`).addClass('active');
+                    });
             }
 
             /**
@@ -306,8 +318,8 @@
 
             app.searchPubsWithQuery = function(event) {
                 let self = this;
-                let $searchInput = app.getElement('searchInput');
-                let $searchResults = app.getElement('searchResults');
+                let $searchInput = this.getElement('searchInput');
+                let $searchResults = this.getElement('searchResults');
                 let query = $searchInput.val().trim();
                 if (query.length < 2) {
                     $searchResults.removeClass('show');
@@ -318,13 +330,13 @@
                 API.search(bounds, query)
                     .done(response => {
                         let results = response.data.layer.features.map(d => d.properties);
-                        self.renderDropdown(results);
+                        self.renderSearchResultsDropdown(results);
                     });
             }
 
-            app.renderDropdown = function(items) {
-                let $searchInput = app.getElement('searchInput');
-                let $searchResults = app.getElement('searchResults');
+            app.renderSearchResultsDropdown = function(items) {
+                let $searchInput = this.getElement('searchInput');
+                let $searchResults = this.getElement('searchResults');
                 $searchResults.empty();
                 if (items.length === 0) {
                     $searchResults[0].innerHTML = '<li><span class="dropdown-item-text text-muted">No results found</span></li>';
@@ -341,7 +353,7 @@
                             e.preventDefault();
                             $searchInput.get(0).value = pub.name;
                             $searchResults.removeClass('show');
-                            AdminAPI.add(pub.id);
+                            API.addPubToCrawl(pub.id);
                         });
 
                         li.appendChild(a);
@@ -360,7 +372,7 @@
                 }
             });
 
-            app.getElement('searchInput').on('keyup', debounce(function(event) {app.searchPubsWithQuery(event);}, 1000));
+            app.getElement('searchInput').on('keyup', debounce(function(event) { app.searchPubsWithQuery(event); }, 1000));
 
             {% endif %}
 
@@ -416,15 +428,15 @@
                     {% if user.is_authenticated %}
                     // Build menu action items
                     let $completeButton = $(`<a class="dropdown-item" href="#">Complete</a>`).on('click', function(event) {
-                        return AdminAPI.complete(pub.id);
+                        return API.markPubAsComplete(pub.id);
                     });
 
                     let $incompleteButton = $(`<a class="dropdown-item" href="#">Incomplete</a>`).on('click', function(event) {
-                        return AdminAPI.incomplete(pub.id);
+                        return API.markPubAsIncomplete(pub.id);
                     });
 
                     let $removeButton = $(`<a class="dropdown-item" href="#">Remove</a>`).on('click', function(event) {
-                        return AdminAPI.remove(pub.id);
+                        return API.removePubFromCrawl(pub.id);
                     });                    
 
                     let $actionsDropdown = $('<div>', { class: 'dropdown' }).append(
@@ -543,7 +555,7 @@
                             'dblclick': function (e) {
                                 L.DomEvent.stopPropagation(e);
                                 {% if user.is_authenticated %}
-                                AdminAPI.add(feature.properties.id);
+                                API.addPubToCrawl(feature.properties.id);
                                 {% endif %}
                             }
                         });
@@ -551,14 +563,15 @@
                 });
             }
 
-            var pubLayer = null;
+            // var pubLayer = null;
             function renderPubLayer() {
                 let bounds = L.rectangle(app.getMap().getBounds()).toGeoJSON();
                 API.search(bounds)
                     .done(data => {
-                        pubLayer && pubLayer.remove();
-                        pubLayer = makePubLayer(data.data.layer);
-                        pubLayer.addTo(app.getMap());
+                        // pubLayer && pubLayer.remove();
+                        let pubLayer = makePubLayer(data.data.layer);
+                        // pubLayer.addTo(app.getMap());
+                        app.addLayer('pubs', pubLayer);
                     });
             }
 
