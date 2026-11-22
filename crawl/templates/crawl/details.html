@@ -137,6 +137,27 @@
         }
 
 
+/**
+ * Expands a Leaflet LatLngBounds by a given distance in meters.
+ * @param {L.LatLngBounds} bounds - The original Leaflet bounds
+ * @param {number} meters - The buffer distance in meters
+ * @returns {L.LatLngBounds} A new, expanded LatLngBounds object
+ */
+function bufferBoundsByMeters(bounds, meters) {
+  const sw = bounds.getSouthWest();
+  const ne = bounds.getNorthEast();
+
+  // toBounds takes the full width/height of the box, so multiply by 2
+  const swBuffer = sw.toBounds(meters * 2);
+  const neBuffer = ne.toBounds(meters * 2);
+
+  return L.latLngBounds(
+    swBuffer.getSouthWest(),
+    neBuffer.getNorthEast()
+  );
+}
+
+
 
         /**
          * API 
@@ -565,10 +586,13 @@
                     return;
                 }
 
-                let bounds = L.rectangle(app.getLayer('crawl').toBounds(2500)).toGeoJSON();
+                let bounds = app.getLayer('crawl');
+                let buffer = bufferBoundsByMeters(bounds, 2500);
+                let area = L.rectangle(buffer).toGeoJSON();
+                // let bounds = L.rectangle(app.getLayer('crawl').toBounds(2500)).toGeoJSON();
                 // let bounds = L.rectangle(app.getMap().getCenter().toBounds(1000)).toGeoJSON();
                 this.getApi()
-                    .search(bounds, query)
+                    .search(area, query)
                     .done(response => {
                         let results = response.data.layer.features.map(d => d.properties);
                         self.renderSearchResultsDropdown(results);
