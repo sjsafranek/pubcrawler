@@ -360,7 +360,7 @@
                 }
             });
 
-            app.getElement('searchInput').on('keyup', debounce(app.searchPubsWithQuery, 1000));
+            app.getElement('searchInput').on('keyup', debounce(function(event) {app.searchPubsWithQuery(event);}, 1000));
 
             {% endif %}
 
