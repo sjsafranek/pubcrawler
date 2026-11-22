@@ -658,9 +658,9 @@
             app.getElement('searchInput').on('keyup', debounce(function(event) { app.searchPubsWithQuery(event); }, 1000));
 
             app.on('onrender', function() {
-                app.getElement('searchInput').removeClass('disabled');
+                app.getElement('searchInput').attr('disabled', false);
                 if (2 <= app.getData().filter(d => !d.completed).length) {
-                    app.getElement('searchInput').addClass('disabled');
+                    app.getElement('searchInput').attr('disabled', true);
                 }
             });
 
