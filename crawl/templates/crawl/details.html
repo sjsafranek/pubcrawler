@@ -336,6 +336,7 @@
                 let self = this;
                 let $searchInput = this.getElement('searchInput');
                 let $searchResults = this.getElement('searchResults');
+
                 let query = $searchInput.val().trim();
                 if (query.length < 2) {
                     $searchResults.removeClass('show');
@@ -369,7 +370,11 @@
                             e.preventDefault();
                             $searchInput.get(0).value = pub.name;
                             $searchResults.removeClass('show');
-                            API.addPubToCrawl(pub.id);
+                            API.addPubToCrawl(pub.id)
+                                .then(() => {
+                                    $searchInput.val(null);
+                                    $searchResults.empty();
+                                });
                         });
 
                         li.appendChild(a);
