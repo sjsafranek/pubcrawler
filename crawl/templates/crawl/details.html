@@ -403,9 +403,8 @@
             app.getMap().getPane('crawlPane').style.zIndex = 420;
             app.addLayer('crawl', L.layerGroup());
 
-            function makeCrawlPubMarker(i, pub) {
-                console.log(pub);
-                let icon = !pub.completed ? createPubPendingIcon(i+1) : createPubCompletedIcon(i+1)
+            makeCrawlPubMarker(pub) {
+                let icon = !pub.completed ? createPubPendingIcon(pub.position) : createPubCompletedIcon(pub.position)
                 let marker = L.marker([pub.latitude, pub.longitude], { 
                                     icon: icon, 
                                     pane: 'crawlPane' 
@@ -438,7 +437,7 @@
                 // Loop through pubs
                 $.each(allPubs, (i, pub) => {
                     // Create marker and add to 'crawlLayer'
-                    const marker = makeCrawlPubMarker(i, pub);
+                    const marker = makeCrawlPubMarker(pub);
                     marker.addTo(layer);
 
                     // Add entry to sidebar
@@ -531,19 +530,24 @@
 
             /** 
              * PubLayer
-             */         
-            app.getMap().createPane('pubPane');
-            app.getMap().getPane('pubPane').style.zIndex = 410;            
-            
-            const textIcons = {
-                'bar': '🍸',
-                'pub': '🍺',
-                'biergarten': '🍺',
-                'brewery': '🍺',
-                'restaurant': '🍽️'
-            }
-
+             */
             function makePubLayer(geojson) {
+                // Create new layer pane if needed
+                if (!app.getMap().getPane('pubPane')) {
+                    app.getMap().createPane('pubPane');
+                    app.getMap().getPane('pubPane').style.zIndex = 410;  
+                }
+
+                // Define text icons for markers
+                const textIcons = {
+                    'bar': '🍸',
+                    'pub': '🍺',
+                    'biergarten': '🍺',
+                    'brewery': '🍺',
+                    'restaurant': '🍽️'
+                }
+
+                // Initialize GeoJSON layer
                 return new L.GeoJSON(geojson, {
                     pointToLayer: function (feature, latlng) {
                         return new L.TextIconCircleMarker(latlng, {
