@@ -190,24 +190,32 @@
          */
         class App {
             constructor(data) {
+                let self = this;
 
                 this.data = data || [];
 
+                // Initialize leaflet map
                 this.map = L.map("map", {
                     doubleClickZoom: false, 
                     preferCanvas: true
                 });
                 this.map.setView([20, 0], 2);
-
                 L.tileLayer.osm().addTo(this.map);
 
+                // Attach ui elements
                 this.elements = {
                     $status: $("#status"), 
                     $list: $("#list")
                 }
 
+                // Create map layers
                 this.layers = {};
+
+                // Attach listeners
+                this.getMap().on('moveend zoomend resize', debounce(function(event) { self.renderPubLayer(); }, 1500));
+                this.renderPubLayer();
             }
+
 
             getData() {
                 return this.data;
@@ -458,7 +466,7 @@
                                     $searchResults.removeClass('show');
                                     
                                     app.addPubToCrawl(pub.id)
-                                        .them(renderCrawlLayer)
+                                        .then(renderCrawlLayer)
                                         .then(() => {
                                             $searchInput.val(null);
                                             $searchResults.empty();
@@ -608,120 +616,6 @@
             }
 
             renderCrawlLayer();
-
-
-            /** 
-             * PubLayer
-             */
-            // function makePubLayer(geojson) {
-            //     // Create new layer pane if needed
-            //     if (!app.getMap().getPane('pubPane')) {
-            //         app.getMap().createPane('pubPane');
-            //         app.getMap().getPane('pubPane').style.zIndex = 410;  
-            //     }
-
-            //     // Define text icons for markers
-            //     const textIcons = {
-            //         'bar': '🍸',
-            //         'pub': '🍺',
-            //         'biergarten': '🍺',
-            //         'brewery': '🍺',
-            //         'restaurant': '🍽️'
-            //     }
-
-            //     // Initialize GeoJSON layer
-            //     return new L.GeoJSON(geojson, {
-            //         pointToLayer: function (feature, latlng) {
-            //             return new L.TextIconCircleMarker(latlng, {
-            //                 radius: 13,
-            //                 fillColor: '#212529',
-            //                 color: '#000000',
-            //                 weight: 2,
-            //                 fillOpacity: 0.8, 
-            //                 iconText: textIcons[feature.properties.subtype], 
-            //                 iconFont: 'bold 14px sans-serif',
-            //                 pane: 'pubPane' 
-            //             });
-            //         },
-            //         onEachFeature: function (feature, layer) {
-            //             if (feature.properties && feature.properties.name) {
-            //                 let content = App.makePopupContentForPub(feature.properties);
-            //                 layer.bindPopup(content);
-            //             }
-            //             layer.on({
-            //                 'click': function(event) {
-            //                     console.log(feature.properties);
-            //                 }
-            //             });
-            //         }
-            //     });
-            // }
-
-            // function renderPubLayer() {
-            //     let bounds = L.rectangle(app.getMap().getBounds()).toGeoJSON();
-            //     API.search(bounds)
-            //         .done(data => {
-            //             let pubLayer = app.makePubLayer(data.data.layer);
-            //             app.addLayer('pubs', pubLayer);
-            //         });
-            // }
-
-            app.getMap().on('moveend zoomend resize', debounce(function(event) { app.renderPubLayer(); }, 1500));
-            app.renderPubLayer();
-
-
-            // // Draw walking path
-            // let pathLayer;
-            // let coordinates = allPubs.map(d => `${d.longitude},${d.latitude}`).join(';');
-            // let radiuses = allPubs.map(d => `25`).join(';');
-            // $.getJSON(`http://router.project-osrm.org/route/v1/foot/${coordinates}?overview=simplified&geometries=geojson`)
-            //     .done(data => {
-            //         console.log(data);
-            //         pathLayer && pathLayer.remove();
-            //         pathLayer = new L.GeoJSON(data.routes[0].geometry, {
-            //             style: {
-            //                 color: '#ff5722',
-            //                 weight: 4,
-            //                 opacity: 0.9,
-            //                 className: 'marching-ants-line' 
-            //             }
-            //         });
-            //         pathLayer.addTo(map);
-            //     });
-
-
-
-                // // Get users location
-                // if ("geolocation" in navigator) {
-                //     navigator.geolocation.getCurrentPosition(
-                //         (position) => {
-                //             console.log(`Latitude: ${position.coords.latitude} Longitude: ${position.coords.longitude}`);
-                //             // Create latlng of users location
-                //             let location = L.latLng(position.coords.latitude, position.coords.longitude);
-                //             // Creates a LatLngBounds object extending 500 meters in each direction (1000m x 1000m box)
-                //             let bounds = location.toBounds(500);
-                //             let geom = L.rectangle(bounds).toGeoJSON();
-
-                //             API.search(geom, query)
-                //                 .done(response => {
-                //                     let results = response.data.pubs;
-                //                     for (let i=0; i<results.length; i++) {
-                //                         console.log(results[i]);
-                //                     }
-                //                 });
-                //         },
-                //         (error) => {
-                //             console.error(`Error (${error.code}): ${error.message}`);
-                //         },
-                //         {
-                //             enableHighAccuracy: true,
-                //             timeout: 30000,
-                //             maximumAge: 0
-                //         }
-                //     );
-                // } else {
-                //     console.log("Geolocation is not supported by this browser.");
-                // }
 
         });
 
