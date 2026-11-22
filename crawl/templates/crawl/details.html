@@ -586,7 +586,7 @@ function bufferBoundsByMeters(bounds, meters) {
                     return;
                 }
 
-                let bounds = app.getLayer('crawl');
+                let bounds = app.getLayer('crawl').getBounds();
                 let buffer = bufferBoundsByMeters(bounds, 2500);
                 let area = L.rectangle(buffer).toGeoJSON();
                 // let bounds = L.rectangle(app.getLayer('crawl').toBounds(2500)).toGeoJSON();
