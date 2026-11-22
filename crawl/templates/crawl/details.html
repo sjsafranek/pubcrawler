@@ -565,7 +565,8 @@
                     return;
                 }
 
-                let bounds = L.rectangle(app.getMap().getCenter().toBounds(1000)).toGeoJSON();
+                let bounds = L.rectangle(app.getLayer('crawl').toBounds(2500)).toGeoJSON();
+                // let bounds = L.rectangle(app.getMap().getCenter().toBounds(1000)).toGeoJSON();
                 this.getApi()
                     .search(bounds, query)
                     .done(response => {
