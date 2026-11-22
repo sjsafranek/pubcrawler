@@ -125,6 +125,7 @@
     {{ pubs|json_script:"pubs-json" }}
     <script>
 
+
         // Formatters
         function formatDistance(m) {
             return m < 1000 ? m + " m" : (m / 1000).toFixed(1) + " km";
@@ -150,13 +151,16 @@
         }
 
 
+
         /**
          * API 
          */
-        const API = {
-            crawlId: {{ crawl.id }},
-
-            search: function(geom, query) {
+        class Api {
+            constructor(crawl_id) {
+                this.crawlId = crawl_id;
+            }
+            
+            search(geom, query) {
                 let geomString = encodeURIComponent(JSON.stringify(geom));
                 if (!query)
                     return $.getJSON(`/api/v1/pubs/search?geom=${geomString}`);
@@ -164,38 +168,42 @@
                 return $.getJSON(`/api/v1/pubs/search?geom=${geomString}&query=${queryString}`);
             }
         }
-
+        
         {% if user.is_authenticated %}
 
-        API.addPubToCrawl = function(pub_id) {
-            return $.getJSON(`/api/v1/crawl/${API.crawlId}/pub/${pub_id}/add`);
+        Api.prototype.addPubToCrawl(pub_id) {
+            return $.getJSON(`/api/v1/crawl/${this.crawlId}/pub/${pub_id}/add`);
         }
 
-        API.removePubFromCrawl = function(pub_id) {
-            return $.getJSON(`/api/v1/crawl/${API.crawlId}/pub/${pub_id}/remove`);
+        Api.prototype.removePubFromCrawl(pub_id) {
+            return $.getJSON(`/api/v1/crawl/${this.crawlId}/pub/${pub_id}/remove`);
         }
 
-        API.markPubAsComplete = function(pub_id) {
-            return $.getJSON(`/api/v1/crawl/${API.crawlId}/pub/${pub_id}/complete`);
+        Api.prototype.markPubAsComplete(pub_id) {
+            return $.getJSON(`/api/v1/crawl/${this.crawlId}/pub/${pub_id}/complete`);
         }
 
-        API.markPubAsIncomplete = function(pub_id) {
-            return $.getJSON(`/api/v1/crawl/${API.crawlId}/pub/${pub_id}/incomplete`);
+        Api.prototype.markPubAsIncomplete(pub_id) {
+            return $.getJSON(`/api/v1/crawl/${this.crawlId}/pub/${pub_id}/incomplete`);
         }
 
         {% endif %}
+
+
 
         /**
          * App 
          */
         class App extends EventEmitter {
-            constructor(data) {
+            constructor(crawl_id) {
                 // Calls the parent constructor; MUST be called before using 'this'
                 super(); 
 
                 let self = this;
 
-                this.data = data || [];
+                this.api = new Api(crawl_id);
+
+                this.data = [];
 
                 // Initialize leaflet map
                 this.map = L.map("map", {
@@ -218,6 +226,10 @@
                 this.getMap().on('moveend zoomend resize', debounce(function(event) { self.renderPubLayer(); }, 1500));
             }
 
+            getApi() {
+                return this.api;
+            }
+
             getData() {
                 return this.data;
             }
@@ -234,12 +246,6 @@
                 return this.elements.$list;
             }
 
-            // setStatus(text, isError = false) {
-            //     this.getElement('status').text(text)
-            //         .toggleClass("text-danger", isError)
-            //         .toggleClass("text-body-secondary", !isError);
-            // }
-
             getElement(name) {
                 return this.elements[`$${name}`];
             }
@@ -252,45 +258,6 @@
                 this.layers[name] && this.layers[name].remove();
                 this.layers[name] = layer;
                 this.layers[name].addTo(this.getMap());
-            }
-
-            /**
-             * API Handlers 
-             */
-            addPubToCrawl(pub) {
-                let self = this;
-                return API.addPubToCrawl(pub.id)
-                            .done(response => { 
-                                self.getData().push(response.data.pub);
-                            })
-                            .then(() => { self.render(); });
-            }
-
-            removePubFromCrawl(pub) {
-                let self = this;
-                return API.removePubFromCrawl(pub.id)
-                            .done(response => { 
-                                self.data = self.getData().filter(d => d.id != pub.id);
-                            })
-                            .then(() => { self.render(); });
-            }
-
-            markPubAsComplete(pub) {
-                let self = this;
-                return API.markPubAsComplete(pub.id)
-                            .done(response => { 
-                                self.getData().filter(d => d.id == pub.id)[0].completed = true;
-                            })
-                            .then(() => { self.render(); });
-            }
-
-            markPubAsIncomplete(pub) {
-                let self = this;
-                return API.markPubAsIncomplete(pub.id)
-                            .done(response => { 
-                                self.getData().filter(d => d.id == pub.id)[0].completed = false;
-                            })
-                            .then(() => { self.render(); });
             }
             
             /** 
@@ -343,7 +310,8 @@
             renderPubLayer() {
                 let self = this;
                 let bounds = L.rectangle(this.getMap().getBounds()).toGeoJSON();
-                API.search(bounds)
+                this.getApi()
+                    .search(bounds)
                     .done(data => {
                         let pubLayer = self._makePubLayer(data.data.layer);
                         self.addLayer('pubs', pubLayer);
@@ -527,6 +495,52 @@
         }
 
 
+
+        {% if user.is_authenticated %}
+
+        Api.prototype.addPubToCrawl = function(pub) {
+            let self = this;
+            return this.getApi()
+                        .addPubToCrawl(pub.id)
+                        .done(response => { 
+                            self.getData().push(response.data.pub);
+                        })
+                        .then(() => { self.render(); });
+        }
+
+        Api.prototype.removePubFromCrawl = function(pub) {
+            let self = this;
+            return this.getApi()
+                        .removePubFromCrawl(pub.id)
+                        .done(response => { 
+                            self.data = self.getData().filter(d => d.id != pub.id);
+                        })
+                        .then(() => { self.render(); });
+        }
+
+        Api.prototype.markPubAsComplete = function(pub) {
+            let self = this;
+            return this.getApi()
+                        .markPubAsComplete(pub.id)
+                        .done(response => { 
+                            self.getData().filter(d => d.id == pub.id)[0].completed = true;
+                        })
+                        .then(() => { self.render(); });
+        }
+
+        Api.prototype.markPubAsIncomplete = function(pub) {
+            let self = this;
+            return this.getApi()
+                        .markPubAsIncomplete(pub.id)
+                        .done(response => { 
+                            self.getData().filter(d => d.id == pub.id)[0].completed = false;
+                        })
+                        .then(() => { self.render(); });
+        }
+
+        {% endif %}
+
+
         // Initialize application
         $(function () {
 
@@ -538,7 +552,9 @@
             console.log(pubs);
 
             // Initialize app
-            const app = new App(pubs);
+            const crawl_id = {{ crawl.id }};
+            const app = new App(crawl_id);
+            app.setData(pubs);
             window.app = app;
 
             {% if user.is_authenticated %}
@@ -561,7 +577,8 @@
                 }
 
                 let bounds = L.rectangle(app.getMap().getCenter().toBounds(1000)).toGeoJSON();
-                API.search(bounds, query)
+                this.getApi()
+                    .search(bounds, query)
                     .done(response => {
                         let results = response.data.layer.features.map(d => d.properties);
                         self.renderSearchResultsDropdown(results);
