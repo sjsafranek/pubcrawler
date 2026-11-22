@@ -148,7 +148,66 @@
         }
 
 
+        /**
+         * API 
+         */
+        const API = {
+            crawlId: {{ crawl.id }},
 
+            search: function(geom, query) {
+                let geomString = encodeURIComponent(JSON.stringify(geom));
+                if (!query)
+                    return $.getJSON(`/api/v1/pubs/search?geom=${geomString}`);
+                let queryString = encodeURIComponent(query);
+                return $.getJSON(`/api/v1/pubs/search?geom=${geomString}&query=${queryString}`);
+            }
+        }
+
+        {% if user.is_authenticated %}
+
+        API.addPubToCrawl = function(pub_id) {
+            return $.getJSON(`/api/v1/crawl/${API.crawlId}/pub/${pub_id}/add`)
+                .done(response => { 
+                    allPubs.push(response.data.pub);
+                    renderCrawlLayer();
+                });
+        }
+
+        API.removePubFromCrawl = function(pub_id) {
+            return $.getJSON(`/api/v1/crawl/${API.crawlId}/pub/${pub_id}/remove`)
+                .done(response => { 
+                    allPubs = allPubs.filter(d => d.id != pub_id);
+                    renderCrawlLayer();
+                });
+        }
+
+        API.markPubAsComplete = function(pub_id) {
+            return $.getJSON(`/api/v1/crawl/${API.crawlId}/pub/${pub_id}/complete`)
+                .done(response => { 
+                    let pub = allPubs.filter(d => d.id == pub_id)[0];
+                    pub.completed = true;
+                    renderCrawlLayer();
+                    $(`.list-group-item-action[data-pub-id="${pub_id}"]`).addClass('active');
+                });
+        }
+
+        API.markPubAsIncomplete = function(pub_id) {
+            return $.getJSON(`/api/v1/crawl/${API.crawlId}/pub/${pub_id}/incomplete`)
+                .done(response => { 
+                    let pub = allPubs.filter(d => d.id == pub_id)[0];
+                    pub.completed = false;
+                    renderCrawlLayer();
+                    $(`.list-group-item-action[data-pub-id="${pub_id}"]`).addClass('active');
+                });
+        }
+
+        {% endif %}
+
+
+
+        /**
+         * App 
+         */
         class App {
             constructor() {
                 this.map = L.map("map", {
@@ -195,6 +254,63 @@
                 this.layers[name].addTo(this.getMap());
             }
 
+            /** 
+             * PubLayer
+             */
+            _makePubLayer(geojson) {
+                // Create new layer pane if needed
+                if (!this.getMap().getPane('pubPane')) {
+                    this.getMap().createPane('pubPane');
+                    this.getMap().getPane('pubPane').style.zIndex = 410;  
+                }
+
+                // Define text icons for markers
+                const textIcons = {
+                    'bar': '🍸',
+                    'pub': '🍺',
+                    'biergarten': '🍺',
+                    'brewery': '🍺',
+                    'restaurant': '🍽️'
+                }
+
+                // Initialize GeoJSON layer
+                return new L.GeoJSON(geojson, {
+                    pointToLayer: function (feature, latlng) {
+                        return new L.TextIconCircleMarker(latlng, {
+                            radius: 13,
+                            fillColor: '#212529',
+                            color: '#000000',
+                            weight: 2,
+                            fillOpacity: 0.8, 
+                            iconText: textIcons[feature.properties.subtype], 
+                            iconFont: 'bold 14px sans-serif',
+                            pane: 'pubPane' 
+                        });
+                    },
+                    onEachFeature: function (feature, layer) {
+                        if (feature.properties && feature.properties.name) {
+                            let content = App.makePopupContentForPub(feature.properties);
+                            layer.bindPopup(content);
+                        }
+                        layer.on({
+                            'click': function(event) {
+                                console.log(feature.properties);
+                            }
+                        });
+                    }
+                });
+            }
+
+            renderPubLayer() {
+                let self = this;
+                let bounds = L.rectangle(this.getMap().getBounds()).toGeoJSON();
+                API.search(bounds)
+                    .done(data => {
+                        let pubLayer = self._makePubLayer(data.data.layer);
+                        app.addLayer('pubs', pubLayer);
+                    });
+            }
+
             // Make marker for craw pub
             static makeCrawlPubMarker(pub) {
                 let icon = !pub.completed ? createPubPendingIcon(pub.position) : createPubCompletedIcon(pub.position)
@@ -204,7 +320,7 @@
                                 });
 
                 // Create popup
-                let content = App.popupContent(pub);
+                let content = App.makePopupContentForPub(pub);
                 marker.bindPopup(content);
 
                 // Attach event listeners
@@ -221,7 +337,7 @@
             }
 
             // Built with jQuery's .text() so venue data is never interpreted as HTML
-            static makePopupContent(pub) {
+            static makePopupContentForPub(pub) {
                 const $container = $("<div>").append(
                     $("<strong>").text(pub.name),
                     $("<br>"),
@@ -269,89 +385,10 @@
             const app = new App();
             window.app = app;
 
-            // // Built with jQuery's .text() so venue data is never interpreted as HTML
-            // function popupContent(pub) {
-            //     const $container = $("<div>").append(
-            //         $("<strong>").text(pub.name),
-            //         $("<br>"),
-            //         document.createTextNode(pub.subtype)
-            //     );
-                
-            //     // const addLine = text => $container.append($("<br>"), document.createTextNode(text));
-            //     const addLine = text => $container.append($("<br>"), text);
-            //     if (pub.address_street_number && pub.address_street_name) addLine(`${pub.address_street_number} ${pub.address_street_name}`);
-            //     if (pub.hours) {
-            //         // addLine("Hours: " + pub.hours);
-            //         let times = pub.hours.split(';');
-            //         addLine("Hours: ");
-            //         for(let i=0; i<times.length; i++) {
-            //             addLine(`&emsp;${times[i]}`);
-            //         }
-            //     }
-            //     if (pub.phone) {
-            //         let cleaned = pub.phone.replaceAll('-');
-            //         addLine(`🕿 <a href="tel:+${cleaned}">${pub.phone}</a>`);
-            //     }
-            //     if (pub.website && /^https?:\/\//.test(pub.website)) {
-            //         $container.append(
-            //             $("<br>"),
-            //             $("<a>", { href: pub.website, target: "_blank", rel: "noopener" }).text("Website")
-            //         );
-            //     }
-            //     return $container[0];
-            // }
 
-
-            const API = {
-                crawlId: {{ crawl.id }},
-
-                search: function(geom, query) {
-                    let geomString = encodeURIComponent(JSON.stringify(geom));
-                    if (!query)
-                        return $.getJSON(`/api/v1/pubs/search?geom=${geomString}`);
-                    let queryString = encodeURIComponent(query);
-                    return $.getJSON(`/api/v1/pubs/search?geom=${geomString}&query=${queryString}`);
-                }
-            }
-
+          
 
             {% if user.is_authenticated %}
-
-            API.addPubToCrawl = function(pub_id) {
-                return $.getJSON(`/api/v1/crawl/${API.crawlId}/pub/${pub_id}/add`)
-                    .done(response => { 
-                        allPubs.push(response.data.pub);
-                        renderCrawlLayer();
-                    });
-            }
-
-            API.removePubFromCrawl = function(pub_id) {
-                return $.getJSON(`/api/v1/crawl/${API.crawlId}/pub/${pub_id}/remove`)
-                    .done(response => { 
-                        allPubs = allPubs.filter(d => d.id != pub_id);
-                        renderCrawlLayer();
-                    });
-            }
-
-            API.markPubAsComplete = function(pub_id) {
-                return $.getJSON(`/api/v1/crawl/${API.crawlId}/pub/${pub_id}/complete`)
-                    .done(response => { 
-                        let pub = allPubs.filter(d => d.id == pub_id)[0];
-                        pub.completed = true;
-                        renderCrawlLayer();
-                        $(`.list-group-item-action[data-pub-id="${pub_id}"]`).addClass('active');
-                    });
-            }
-
-            API.markPubAsIncomplete = function(pub_id) {
-                return $.getJSON(`/api/v1/crawl/${API.crawlId}/pub/${pub_id}/incomplete`)
-                    .done(response => { 
-                        let pub = allPubs.filter(d => d.id == pub_id)[0];
-                        pub.completed = false;
-                        renderCrawlLayer();
-                        $(`.list-group-item-action[data-pub-id="${pub_id}"]`).addClass('active');
-                    });
-            }
 
             /**
              * Pub Search 
@@ -426,30 +463,6 @@
             /**
              * CrawlLayer
              */
-
-            // function makeCrawlPubMarker(pub) {
-            //     let icon = !pub.completed ? createPubPendingIcon(pub.position) : createPubCompletedIcon(pub.position)
-            //     let marker = L.marker([pub.latitude, pub.longitude], { 
-            //                         icon: icon, 
-            //                         pane: 'crawlPane' 
-            //                     });
-
-            //     // Create popup
-            //     let content = popupContent(pub);
-            //     marker.bindPopup(content);
-
-            //     // Attach event listeners
-            //     marker.on({
-            //         'mouseover': function (e) {
-            //             marker._icon.classList.add('marker-pub-active');
-            //         },
-            //         'mouseout': function (e) {
-            //             marker._icon.classList.remove('marker-pub-active');
-            //         }
-            //     });
-
-            //     return marker;
-            // }
 
             function renderCrawlLayer() {
                 // Create new layer pane if needed
@@ -566,60 +579,60 @@
             /** 
              * PubLayer
              */
-            function makePubLayer(geojson) {
-                // Create new layer pane if needed
-                if (!app.getMap().getPane('pubPane')) {
-                    app.getMap().createPane('pubPane');
-                    app.getMap().getPane('pubPane').style.zIndex = 410;  
-                }
+            // function makePubLayer(geojson) {
+            //     // Create new layer pane if needed
+            //     if (!app.getMap().getPane('pubPane')) {
+            //         app.getMap().createPane('pubPane');
+            //         app.getMap().getPane('pubPane').style.zIndex = 410;  
+            //     }
 
-                // Define text icons for markers
-                const textIcons = {
-                    'bar': '🍸',
-                    'pub': '🍺',
-                    'biergarten': '🍺',
-                    'brewery': '🍺',
-                    'restaurant': '🍽️'
-                }
+            //     // Define text icons for markers
+            //     const textIcons = {
+            //         'bar': '🍸',
+            //         'pub': '🍺',
+            //         'biergarten': '🍺',
+            //         'brewery': '🍺',
+            //         'restaurant': '🍽️'
+            //     }
 
-                // Initialize GeoJSON layer
-                return new L.GeoJSON(geojson, {
-                    pointToLayer: function (feature, latlng) {
-                        return new L.TextIconCircleMarker(latlng, {
-                            radius: 13,
-                            fillColor: '#212529',
-                            color: '#000000',
-                            weight: 2,
-                            fillOpacity: 0.8, 
-                            iconText: textIcons[feature.properties.subtype], 
-                            iconFont: 'bold 14px sans-serif',
-                            pane: 'pubPane' 
-                        });
-                    },
-                    onEachFeature: function (feature, layer) {
-                        if (feature.properties && feature.properties.name) {
-                            let content = App.popupContent(feature.properties);
-                            layer.bindPopup(content);
-                        }
-                        layer.on({
-                            'click': function(event) {
-                                console.log(feature.properties);
-                            }
-                        });
-                    }
-                });
-            }
+            //     // Initialize GeoJSON layer
+            //     return new L.GeoJSON(geojson, {
+            //         pointToLayer: function (feature, latlng) {
+            //             return new L.TextIconCircleMarker(latlng, {
+            //                 radius: 13,
+            //                 fillColor: '#212529',
+            //                 color: '#000000',
+            //                 weight: 2,
+            //                 fillOpacity: 0.8, 
+            //                 iconText: textIcons[feature.properties.subtype], 
+            //                 iconFont: 'bold 14px sans-serif',
+            //                 pane: 'pubPane' 
+            //             });
+            //         },
+            //         onEachFeature: function (feature, layer) {
+            //             if (feature.properties && feature.properties.name) {
+            //                 let content = App.makePopupContentForPub(feature.properties);
+            //                 layer.bindPopup(content);
+            //             }
+            //             layer.on({
+            //                 'click': function(event) {
+            //                     console.log(feature.properties);
+            //                 }
+            //             });
+            //         }
+            //     });
+            // }
 
-            function renderPubLayer() {
-                let bounds = L.rectangle(app.getMap().getBounds()).toGeoJSON();
-                API.search(bounds)
-                    .done(data => {
-                        let pubLayer = makePubLayer(data.data.layer);
-                        app.addLayer('pubs', pubLayer);
-                    });
-            }
+            // function renderPubLayer() {
+            //     let bounds = L.rectangle(app.getMap().getBounds()).toGeoJSON();
+            //     API.search(bounds)
+            //         .done(data => {
+            //             let pubLayer = app.makePubLayer(data.data.layer);
+            //             app.addLayer('pubs', pubLayer);
+            //         });
+            // }
 
-            app.getMap().on('moveend zoomend resize', debounce(renderPubLayer, 1500));
+            app.getMap().on('moveend zoomend resize', debounce(function(event) { app.renderPubLayer(); }, 1500));
 
             renderPubLayer();
 
