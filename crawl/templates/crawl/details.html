@@ -188,9 +188,13 @@
             }
 
             setStatus(text, isError = false) {
-                this.elements.$status.text(text)
+                this.getElement('status').text(text)
                     .toggleClass("text-danger", isError)
                     .toggleClass("text-body-secondary", !isError);
+            }
+
+            getElement(name) {
+                return this.elements[`$${name}`];
             }
         }
 
@@ -297,11 +301,14 @@
              * Pub Search 
              */
             app.elements.$searchInput = $('#searchInput');
-            app.elements.$searchResults = $('#searchResults')
+            app.elements.$searchResults = $('#searchResults');
+
             function searchPubs(event) {
-                let query = app.elements.$searchInput.val().trim();
+                let $searchInput = app.getElement('searchInput');
+                let $searchResults = app.getElement('searchResults');
+                let query = $searchInput.val().trim();
                 if (query.length < 2) {
-                    app.elements.$searchResults.removeClass('show');
+                    $searchResults.removeClass('show');
                     return;
                 }
 
@@ -314,11 +321,10 @@
             }
 
             function renderDropdown(items) {
-                let resultsDropdown = app.elements.$searchResults.get(0); 
-                resultsDropdown.innerHTML = '';
-
+                let $searchResults = app.getElement('searchResults');
+                $searchResults.empty();
                 if (items.length === 0) {
-                    resultsDropdown.innerHTML = '<li><span class="dropdown-item-text text-muted">No results found</span></li>';
+                    $searchResults[0].innerHTML = '<li><span class="dropdown-item-text text-muted">No results found</span></li>';
                 } else {
                     items.forEach(pub => {
                         const li = document.createElement('li');
@@ -331,27 +337,27 @@
                         a.addEventListener('click', (e) => {
                             e.preventDefault();
                             $searchInput.get(0).value = pub.name;
-                            resultsDropdown.classList.remove('show');
+                            $searchResults.removeClass('show');
                             AdminAPI.add(pub.id);
                         });
 
                         li.appendChild(a);
-                        resultsDropdown.appendChild(li);
+                        $searchResults.append(li);
                     });
                 }
-
-                resultsDropdown.classList.add('show');
+                $searchResults.addClass('show');
             }
 
             // Hide dropdown when clicking outside
             document.addEventListener('click', (e) => {
-                let resultsDropdown = app.elements.$searchResults.get(0); 
-                if (!app.elements.$searchInput.get(0).contains(e.target) && !resultsDropdown.contains(e.target)) {
-                    resultsDropdown.classList.remove('show');
+                let searchInput = app.getElement('searchInput').get(0)
+                let searchResults = app.getElement('searchResults').get(0); 
+                if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+                    searchResults.classList.remove('show');
                 }
             });
 
-            app.elements.$searchInput.on('keyup', debounce(searchPubs, 1500));
+            app.getElement('searchResults').on('keyup', debounce(searchPubs, 1500));
 
             {% endif %}
 
