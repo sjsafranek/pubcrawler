@@ -399,11 +399,8 @@
             /**
              * CrawlLayer
              */
-            app.getMap().createPane('crawlPane');
-            app.getMap().getPane('crawlPane').style.zIndex = 420;
-            app.addLayer('crawl', L.layerGroup());
 
-            makeCrawlPubMarker(pub) {
+            function makeCrawlPubMarker(pub) {
                 let icon = !pub.completed ? createPubPendingIcon(pub.position) : createPubCompletedIcon(pub.position)
                 let marker = L.marker([pub.latitude, pub.longitude], { 
                                     icon: icon, 
@@ -428,6 +425,17 @@
             }
 
             function renderCrawlLayer() {
+                // Create new layer pane if needed
+                if (!app.getMap().getPane('crawlPane')) {
+                    app.getMap().createPane('crawlPane');
+                    app.getMap().getPane('crawlPane').style.zIndex = 420;
+                }
+
+                // Create new layer if needed
+                if (!app.getLayer('crawl')) {
+                    app.addLayer('crawl', L.layerGroup());
+                }
+
                 // Reset ui elements and map layers
                 app.setStatus(`Loading...`);
                 let layer = app.getLayer('crawl');
