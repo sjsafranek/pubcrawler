@@ -293,13 +293,15 @@
                 }
             }
 
-            // Handle pub search
-            let $searchInput = $('#searchInput');
-            let $searchResults = $('#searchResults')
+            /**
+             * Pub Search 
+             */
+            app.elements.$searchInput = $('#searchInput');
+            app.elements.$searchResults = $('#searchResults')
             function searchPubs(event) {
-                let query = $searchInput.val().trim();
+                let query = app.elements.$searchInput.val().trim();
                 if (query.length < 2) {
-                    $searchResults.removeClass('show');
+                    app.elements.$searchResults.removeClass('show');
                     return;
                 }
 
@@ -311,46 +313,46 @@
                     });
             }
 
-  function renderDropdown(items) {
-    let resultsDropdown = $searchResults.get(0); 
-    resultsDropdown.innerHTML = '';
+            function renderDropdown(items) {
+                let resultsDropdown = app.elements.$searchResults.get(0); 
+                resultsDropdown.innerHTML = '';
 
-    if (items.length === 0) {
-      resultsDropdown.innerHTML = '<li><span class="dropdown-item-text text-muted">No results found</span></li>';
-    } else {
-      items.forEach(item => {
-        const li = document.createElement('li');
-        const a = document.createElement('a');
-        a.className = 'dropdown-item';
-        a.href = '#';
-        a.textContent = item.name;
-        
-        // Handle item selection
-        a.addEventListener('click', (e) => {
-          e.preventDefault();
-          $searchInput.get(0).value = item.name;
-          resultsDropdown.classList.remove('show');
-          console.log('Selected ID:', item.id);
-        });
+                if (items.length === 0) {
+                    resultsDropdown.innerHTML = '<li><span class="dropdown-item-text text-muted">No results found</span></li>';
+                } else {
+                    items.forEach(pub => {
+                        const li = document.createElement('li');
+                        const a = document.createElement('a');
+                        a.className = 'dropdown-item';
+                        a.href = '#';
+                        a.textContent = pub.name;
+                        
+                        // Handle item selection
+                        a.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            $searchInput.get(0).value = pub.name;
+                            resultsDropdown.classList.remove('show');
+                            AdminAPI.add(pub.id);
+                        });
 
-        li.appendChild(a);
-        resultsDropdown.appendChild(li);
-      });
-    }
+                        li.appendChild(a);
+                        resultsDropdown.appendChild(li);
+                    });
+                }
 
-    resultsDropdown.classList.add('show');
-  }
+                resultsDropdown.classList.add('show');
+            }
 
-  // Hide dropdown when clicking outside
-  document.addEventListener('click', (e) => {
-    let resultsDropdown = $searchResults.get(0); 
-    if (!$searchInput.get(0).contains(e.target) && !resultsDropdown.contains(e.target)) {
-      resultsDropdown.classList.remove('show');
-    }
-  });
+            // Hide dropdown when clicking outside
+            document.addEventListener('click', (e) => {
+                let resultsDropdown = app.elements.$searchResults.get(0); 
+                if (!$searchInput.get(0).contains(e.target) && !resultsDropdown.contains(e.target)) {
+                    resultsDropdown.classList.remove('show');
+                }
+            });
 
+            app.elements.$searchInput.on('keyup', debounce(searchPubs, 1500));
 
-            $searchInput.on('keyup', debounce(searchPubs, 1500));
             {% endif %}
 
 
