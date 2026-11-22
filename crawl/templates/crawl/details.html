@@ -359,27 +359,6 @@
                     $searchResults[0].innerHTML = '<li><span class="dropdown-item-text text-muted">No results found</span></li>';
                 } else {
                     items.forEach(pub => {
-                        // const li = document.createElement('li');
-                        // const a = document.createElement('a');
-                        // a.className = 'dropdown-item';
-                        // a.href = '#';
-                        // a.textContent = [pub.name, `${pub.address_street_number} ${pub.address_street_name}`].join(" · ")
-                    
-                        // // Handle item selection
-                        // a.addEventListener('click', (e) => {
-                        //     e.preventDefault();
-                        //     $searchInput.get(0).value = pub.name;
-                        //     $searchResults.removeClass('show');
-                        //     API.addPubToCrawl(pub.id)
-                        //         .then(() => {
-                        //             $searchInput.val(null);
-                        //             $searchResults.empty();
-                        //         });
-                        // });
-
-                        // li.appendChild(a);
-                        // $searchResults.append(li);
-
                         let $li = $('<li>').append(
                             $('<a>', { class: 'dropdown-item', href: '#' }).append(
                                     $('<strong>').append(pub.name),
@@ -398,7 +377,6 @@
                                 })
                         );
                         $searchResults.append($li);
-
                     });
                 }
                 $searchResults.addClass('show');
@@ -426,6 +404,7 @@
             app.addLayer('crawl', L.layerGroup());
 
             function makeCrawlPubMarker(i, pub) {
+                console.log(pub);
                 let icon = !pub.completed ? createPubPendingIcon(i+1) : createPubCompletedIcon(i+1)
                 let marker = L.marker([pub.latitude, pub.longitude], { 
                                     icon: icon, 
@@ -552,8 +531,7 @@
 
             /** 
              * PubLayer
-             */
-            // Show nearby Pubs             
+             */         
             app.getMap().createPane('pubPane');
             app.getMap().getPane('pubPane').style.zIndex = 410;            
             
@@ -569,15 +547,11 @@
                 return new L.GeoJSON(geojson, {
                     pointToLayer: function (feature, latlng) {
                         return new L.TextIconCircleMarker(latlng, {
-                            // radius: 12,
                             radius: 13,
-                            // fillColor: '#d3a10e',
-                            // fillColor: '#ffffff',
                             fillColor: '#212529',
                             color: '#000000',
                             weight: 2,
                             fillOpacity: 0.8, 
-                            // fillOpacity: 1, 
                             iconText: textIcons[feature.properties.subtype], 
                             iconFont: 'bold 14px sans-serif',
                             pane: 'pubPane' 
@@ -589,23 +563,13 @@
                             layer.bindPopup(content);
                         }
                         layer.on({
-                            'mouseover': function (e) {
-                                // layer.openPopup();
-                            },
-                            'mouseout': function (e) {
-                                // layer.closePopup();
-                            },
-                            'dblclick': function (e) {
-                                L.DomEvent.stopPropagation(e);
-                                {% if user.is_authenticated %}
-                                API.addPubToCrawl(feature.properties.id);
-                                {% endif %}
+                            'click': function(event) {
+                                console.log(feature.properties);
                             }
                         });
                     }
                 });
             }
-
 
             function renderPubLayer() {
                 let bounds = L.rectangle(app.getMap().getBounds()).toGeoJSON();
