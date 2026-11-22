@@ -232,6 +232,9 @@
          */
         class App extends EventEmitter {
             constructor(data) {
+                // Calls the parent constructor; MUST be called before using 'this'
+                super(); 
+
                 let self = this;
 
                 this.data = data || [];
