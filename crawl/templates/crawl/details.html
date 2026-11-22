@@ -458,7 +458,7 @@
                                     $searchInput.get(0).value = pub.name;
                                     $searchResults.removeClass('show');
                                     
-                                    API.addPubToCrawl(pub.id)
+                                    app.addPubToCrawl(pub.id)
                                         .them(renderCrawlLayer)
                                         .then(() => {
                                             $searchInput.val(null);
