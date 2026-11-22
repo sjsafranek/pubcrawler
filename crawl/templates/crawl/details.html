@@ -148,36 +148,6 @@
         }
 
 
-        // L.helpers = L.helpers || {};
-        // L.helpers.getLayerGroupBounds = function(layerGroup) {
-        //     const bounds = L.latLngBounds([]);
-        //     layerGroup.eachLayer((layer) => {
-        //         if (layer.getBounds) {
-        //             // Handles polygons, polylines, rectangles, circles, and nested FeatureGroups
-        //             bounds.extend(layer.getBounds());
-        //         } else if (layer.getLatLng) {
-        //             // Handles markers and circleMarkers
-        //             bounds.extend(layer.getLatLng());
-        //         }
-        //     });
-        //     return bounds;
-        // }
-
-        // TODO add to 'leaflet-custom-plugins'
-        // L.LayerGroup.include({
-        //     getBounds: function () {
-        //         const bounds = L.latLngBounds();
-        //         this.eachLayer(function (layer) {
-        //             if (typeof layer.getBounds === 'function') {
-        //                 bounds.extend(layer.getBounds());
-        //             } else if (typeof layer.getLatLng === 'function') {
-        //                 bounds.extend(layer.getLatLng());
-        //             }
-        //         });
-        //         return bounds;
-        //     }
-        // });
-
 
         class App {
             constructor() {
@@ -224,26 +194,33 @@
                 this.layers[name] = layer;
                 this.layers[name].addTo(this.getMap());
             }
-        }
 
+            static makeCrawlPubMarker(pub) {
+                let icon = !pub.completed ? createPubPendingIcon(pub.position) : createPubCompletedIcon(pub.position)
+                let marker = L.marker([pub.latitude, pub.longitude], { 
+                                    icon: icon, 
+                                    pane: 'crawlPane' 
+                                });
 
-        // Initialize application
-        $(function () {
+                // Create popup
+                let content = App.popupContent(pub);
+                marker.bindPopup(content);
 
+                // Attach event listeners
+                marker.on({
+                    'mouseover': function (e) {
+                        marker._icon.classList.add('marker-pub-active');
+                    },
+                    'mouseout': function (e) {
+                        marker._icon.classList.remove('marker-pub-active');
+                    }
+                });
 
-            // Parse the JSON data safely in JavaScript
-            var allPubs = JSON.parse(document.getElementById('pubs-json').textContent);
-            console.log(allPubs);
-
-            // Full-height two-pane layout on large screens only
-            if (window.matchMedia("(min-width: 992px)").matches) $(".row").first().addClass("vh-100");
-
-
-            const app = new App();
-            window.app = app;
+                return marker;
+            }
 
             // Built with jQuery's .text() so venue data is never interpreted as HTML
-            function popupContent(pub) {
+            static makePopupContent(pub) {
                 const $container = $("<div>").append(
                     $("<strong>").text(pub.name),
                     $("<br>"),
@@ -273,6 +250,55 @@
                 }
                 return $container[0];
             }
+        }
+
+
+        // Initialize application
+        $(function () {
+
+
+            // Parse the JSON data safely in JavaScript
+            var allPubs = JSON.parse(document.getElementById('pubs-json').textContent);
+            console.log(allPubs);
+
+            // Full-height two-pane layout on large screens only
+            if (window.matchMedia("(min-width: 992px)").matches) $(".row").first().addClass("vh-100");
+
+
+            const app = new App();
+            window.app = app;
+
+            // // Built with jQuery's .text() so venue data is never interpreted as HTML
+            // function popupContent(pub) {
+            //     const $container = $("<div>").append(
+            //         $("<strong>").text(pub.name),
+            //         $("<br>"),
+            //         document.createTextNode(pub.subtype)
+            //     );
+                
+            //     // const addLine = text => $container.append($("<br>"), document.createTextNode(text));
+            //     const addLine = text => $container.append($("<br>"), text);
+            //     if (pub.address_street_number && pub.address_street_name) addLine(`${pub.address_street_number} ${pub.address_street_name}`);
+            //     if (pub.hours) {
+            //         // addLine("Hours: " + pub.hours);
+            //         let times = pub.hours.split(';');
+            //         addLine("Hours: ");
+            //         for(let i=0; i<times.length; i++) {
+            //             addLine(`&emsp;${times[i]}`);
+            //         }
+            //     }
+            //     if (pub.phone) {
+            //         let cleaned = pub.phone.replaceAll('-');
+            //         addLine(`🕿 <a href="tel:+${cleaned}">${pub.phone}</a>`);
+            //     }
+            //     if (pub.website && /^https?:\/\//.test(pub.website)) {
+            //         $container.append(
+            //             $("<br>"),
+            //             $("<a>", { href: pub.website, target: "_blank", rel: "noopener" }).text("Website")
+            //         );
+            //     }
+            //     return $container[0];
+            // }
 
 
             const API = {
@@ -400,29 +426,29 @@
              * CrawlLayer
              */
 
-            function makeCrawlPubMarker(pub) {
-                let icon = !pub.completed ? createPubPendingIcon(pub.position) : createPubCompletedIcon(pub.position)
-                let marker = L.marker([pub.latitude, pub.longitude], { 
-                                    icon: icon, 
-                                    pane: 'crawlPane' 
-                                });
+            // function makeCrawlPubMarker(pub) {
+            //     let icon = !pub.completed ? createPubPendingIcon(pub.position) : createPubCompletedIcon(pub.position)
+            //     let marker = L.marker([pub.latitude, pub.longitude], { 
+            //                         icon: icon, 
+            //                         pane: 'crawlPane' 
+            //                     });
 
-                // Create popup
-                let content = popupContent(pub);
-                marker.bindPopup(content);
+            //     // Create popup
+            //     let content = popupContent(pub);
+            //     marker.bindPopup(content);
 
-                // Attach event listeners
-                marker.on({
-                    'mouseover': function (e) {
-                        marker._icon.classList.add('marker-pub-active');
-                    },
-                    'mouseout': function (e) {
-                        marker._icon.classList.remove('marker-pub-active');
-                    }
-                });
+            //     // Attach event listeners
+            //     marker.on({
+            //         'mouseover': function (e) {
+            //             marker._icon.classList.add('marker-pub-active');
+            //         },
+            //         'mouseout': function (e) {
+            //             marker._icon.classList.remove('marker-pub-active');
+            //         }
+            //     });
 
-                return marker;
-            }
+            //     return marker;
+            // }
 
             function renderCrawlLayer() {
                 // Create new layer pane if needed
@@ -445,7 +471,7 @@
                 // Loop through pubs
                 $.each(allPubs, (i, pub) => {
                     // Create marker and add to 'crawlLayer'
-                    const marker = makeCrawlPubMarker(pub);
+                    const marker = app.makeCrawlPubMarker(pub);
                     marker.addTo(layer);
 
                     // Add entry to sidebar
@@ -571,7 +597,7 @@
                     },
                     onEachFeature: function (feature, layer) {
                         if (feature.properties && feature.properties.name) {
-                            let content = popupContent(feature.properties);
+                            let content = App.popupContent(feature.properties);
                             layer.bindPopup(content);
                         }
                         layer.on({
