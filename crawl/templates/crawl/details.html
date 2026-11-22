@@ -304,8 +304,8 @@
             app.elements.$searchInput = $('#searchInput');
             app.elements.$searchResults = $('#searchResults');
 
-            function searchPubs(event) {
-                console.log('searchPubs', events);
+            app.searchPubsWithQuery = function(event) {
+                let self = this;
                 let $searchInput = app.getElement('searchInput');
                 let $searchResults = app.getElement('searchResults');
                 let query = $searchInput.val().trim();
@@ -318,11 +318,11 @@
                 API.search(bounds, query)
                     .done(response => {
                         let results = response.data.layer.features.map(d => d.properties);
-                        renderDropdown(results);
+                        self.renderDropdown(results);
                     });
             }
 
-            function renderDropdown(items) {
+            app.renderDropdown = function(items) {
                 let $searchInput = app.getElement('searchInput');
                 let $searchResults = app.getElement('searchResults');
                 $searchResults.empty();
@@ -330,7 +330,6 @@
                     $searchResults[0].innerHTML = '<li><span class="dropdown-item-text text-muted">No results found</span></li>';
                 } else {
                     items.forEach(pub => {
-                        console.log('renderDropdown', pub);
                         const li = document.createElement('li');
                         const a = document.createElement('a');
                         a.className = 'dropdown-item';
@@ -361,7 +360,7 @@
                 }
             });
 
-            app.getElement('searchResults').on('keyup', debounce(searchPubs, 1000));
+            app.getElement('searchInput').on('keyup', debounce(app.searchPubsWithQuery, 1000));
 
             {% endif %}
 
