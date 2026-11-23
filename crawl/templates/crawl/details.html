@@ -619,7 +619,7 @@
                 }
             });
 
-            app.getElement('searchInput').on('input keyup keydown', debounce(function(event) { app.searchPubsWithQuery(event); }, 1000));
+            app.getElement('searchInput').on('change input keyup keydown', debounce(function(event) { app.searchPubsWithQuery(event); }, 1000));
 
             app.on('onrender', function() {
                 let disabled = (2 <= app.getData().filter(d => !d.completed).length);
