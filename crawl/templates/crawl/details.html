@@ -571,8 +571,8 @@
                     return;
                 }
 
-                let bounds = app.getLayer('crawl').getBounds();
-                let buffer = L.Bounds.buffer(bounds, 2500);
+                let layer = app.getLayer('crawl');
+                let buffer = L.buffer(layer, 2500);
                 let area = L.rectangle(buffer).toGeoJSON();;
                 this.getApi()
                     .search(area, query)
