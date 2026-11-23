@@ -56,6 +56,10 @@
                 padding-bottom: 96px;
             }
 
+            #searchResults {
+
+            }
+
         </style>
     {% endblock %}
 
@@ -87,8 +91,6 @@
                 {% else %}
                 <div id="status" class="px-3 py-2 small text-body-secondary border-bottom" role="status"></div>
                 {% endif %}
-
-                <div id="status" class="px-3 py-2 small text-body-secondary border-bottom" role="status"></div>
 
                 <div id="list" class="list-group list-group-flush overflow-auto flex-grow-1"></div>
             </aside>
@@ -559,8 +561,6 @@
             app.elements.$searchResults = $('#searchResults');
 
             app.searchPubsWithQuery = function(event) {
-$('#status').append(event.type);
-
                 let self = this;
                 let $searchInput = this.getElement('searchInput');
                 let $searchResults = this.getElement('searchResults');
@@ -572,7 +572,7 @@ $('#status').append(event.type);
                 }
 
                 let bounds = app.getLayer('crawl').getBounds();
-                let buffer = bounds.buffer(2500);
+                let buffer = L.bounds.buffer(bounds, 2500);
                 let area = L.rectangle(buffer).toGeoJSON();;
                 this.getApi()
                     .search(area, query)
