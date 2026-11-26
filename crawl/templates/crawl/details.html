@@ -54,6 +54,8 @@
             /* Sidebar */
             aside {
                 padding-bottom: 96px;
+                /* max-height: 100vh;*/
+                height: 100vh;
             }
 
             #searchResults {
@@ -74,7 +76,7 @@
         <div class="row g-0">
 
             <!-- Sidebar -->
-            <aside class="col-lg-4 col-xl-3 order-2 order-lg-1 d-flex flex-column border-end bg-body" style="max-height: 100vh;">
+            <aside class="col-lg-4 col-xl-3 order-2 order-lg-1 d-flex flex-column border-end bg-body">
 
                 {% if user.is_authenticated %}
                 <div class="dropdown border-bottom p-2">
